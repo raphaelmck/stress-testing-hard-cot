@@ -17,6 +17,9 @@ Last updated: 2026-09-01
   See `RESULTS.md` R001 for the full table and caveats.
 - **R002 complete** (no GPU): D007 embargo lifted, output-level baselines fit,
   comparator/inference rules recorded as D010. See `RESULTS.md` R002.
+- **R003 complete** (no GPU): the preregistered D008 within-question ood control.
+  The probe separates 15/16 questions -- and so does raw `token_length`, exactly.
+  Recorded as D011; `ood_test` is now closed to further inspection.
 
 ## R001 headline
 
@@ -39,55 +42,58 @@ stops**. All pre-run gates passed (CUDA residency, activation site == model's ow
 
 ## Current beliefs
 
-Informal research beliefs, not statistical probabilities. R002 moved these: a single
-untrained scalar recovers most of the distance from chance, but a paired-bootstrap
-advantage for activations survives it.
+Informal research beliefs, not statistical probabilities. R003 moved these sharply.
 
-- H0 output-proximal: 45% (up from 35%)
-- H1 broader latent state: 40%
-- H2 proxy/dataset structure: 15%
+- H0 immediate-output: 20% (down from 45%) -- output features are at chance on the
+  training distribution, and within question the probe beats `think_logprob`.
+- H1 broader termination-ready latent state: 35% (down from 40%)
+- H2 generic depth-into-trace / proxy structure: 45% (up from 15%) -- within
+  question, prefix length alone matches the probe.
 
-R002 also produced a structural fact that constrains both: the output features are at
-chance on the distance-based **train** labels (AUROC ~0.51) yet reach 0.81 OOD, and
-the activation probe transfers across that same label-construction gap at 0.90.
+## Where the evidence stands
 
-## R002 headline
-
-Primary comparator = val-selected depth 40, OOD 0.904 (D010; NOT depth 56 / 0.964).
-
-| baseline | OOD AUROC [95% CI] |
+| claim | status |
 |---|---|
-| activation, depth 40 | 0.904 [0.834, 0.966] |
-| `think_logprob` (untrained scalar) | 0.807 [0.696, 0.905] |
-| `think_margin` | 0.803 [0.694, 0.902] |
-| multivariate output-only (handicapped, see R002) | 0.727 [0.607, 0.843] |
+| the phenomenon reproduces (OOD AUROC 0.90+) | R001, solid |
+| it is reducible to immediate `</think>` propensity | R002+R003, largely no |
+| it is more than between-question topic structure | R003, yes (15/16, p=0.0005) |
+| it is more than prefix length | **untested; R003 found no advantage over length** |
 
-Paired question-clustered delta, depth 40 − `think_logprob`, on ood_test:
-**+0.096 [+0.000, +0.201]**, P(Δ>0) = 0.975 → the 0.05–0.15 band.
-`top1_is_think` is identically zero on all 4,216 rows; mean p(`</think>`) ~2e-12.
+## R003 headline
+
+16 ood_test questions carry both labels. Macro within-question concordance:
+activation depth-40 **0.938** [0.812, 1.000]; `think_logprob` 0.844 [0.656, 1.000];
+**`token_length` 0.938** [0.844, 1.000], positive on 16/16 questions.
+Paired deltas: activation − think +0.094 [+0.000, +0.250], P(Δ>0)=0.88;
+activation − length **+0.000 [−0.188, +0.125]**, P(Δ>0)=0.44.
 
 ## Next experiment (exactly one)
 
-**R003 — residual/conditional test.** Does the depth-40 activation advantage survive
-removing what the output distribution already knows? Regress the output-level
-features out of the activation representation (or equivalently fit the probe on the
-residual), refit under the identical D005 protocol, and evaluate with the same
-paired question-clustered bootstrap against both the raw depth-40 probe and
-`think_logprob`. No GPU needed.
+**R004 — the length control, on `val` and `test`.** `ood_test` is closed (D011).
+val has 30 questions and test 22, with more multi-row questions than ood's mostly
+1v1 pairs, so this is where the comparison has power. No GPU, no refitting of the
+activation probe.
 
-Decision rule on the residualised probe's OOD AUROC:
+1. Within-question macro concordance for depth-40 activation, `think_logprob` and
+   `token_length` on val and on test, with paired question bootstraps.
+2. The conditional test: does the probe rank YES above NO on pairs where
+   `token_length` does **not** (or where the two prefixes are close in length)?
+   Report the length-discordant subset the way R003 reported the think-discordant one.
+3. Report the length-residualized probe score as the secondary analysis.
 
-- drops to within ~0.03 of `think_logprob` (≈0.81) -> the advantage was output
-  information after all; H0 is close to sufficient and the project's answer is a
-  sharp near-negative result.
-- stays within ~0.03 of 0.904 -> the activation signal is largely independent of
-  immediate `</think>` propensity; H1 becomes the leading explanation and D008
-  (within-question paired control) becomes the next target.
-- lands between -> report the partition honestly; prefer D008 over more probing.
+Decision rule:
 
-Do not run D008 yet. Do not fit new activation probes at other depths.
+- probe clearly beats length within question on val and test -> H2's cheap
+  explanation is insufficient; residualization against the output features (the
+  originally planned experiment) becomes R005 to separate H1 from H2.
+- probe ties length again with real power -> the honest headline of this project is
+  that a high OOD termination probe is matched, within question, by prefix length,
+  and the writeup should say exactly that.
+- probe loses to length -> same conclusion, stated more strongly.
+
+Do not reopen `ood_test`. Do not fit new activation probes at other depths.
 
 ## Current blocker
 
-None. R003 needs no GPU: it runs from the cached R001 activations
-(`artifacts/runs/r001_qwen32b/activations/`) and the D007 output features.
+None. R004 needs no GPU: frozen R001 probe scores, cached D007 features, and the
+released `token_length` field.

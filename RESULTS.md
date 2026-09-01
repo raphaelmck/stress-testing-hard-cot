@@ -263,3 +263,113 @@ Artifacts:
 - `artifacts/runs/r002_output_baseline/` (config, metrics, metadata, baseline_scores.csv)
 - `artifacts/tables/output_baseline_auroc.csv`
 - `src/fit_output_baselines.py`
+
+---
+
+## R003 — preregistered within-question control on ood_test (D008)
+
+Commit: entry written at the following commit; run produced under `0642469` + `src/paired_question_analysis.py`
+Run IDs: `r003_paired_ood` (no refitting, no GPU)
+Date: 2026-09-01
+
+Question:
+Do the depth-40 activation scores separate imminent-termination prefixes from
+late-termination prefixes *within the same question*, where prompt, domain and
+usually the already-obtained answer are held fixed?
+
+Hypothesis predictions:
+- H0 predicts activation and `think_logprob` separate to a similar degree and move
+  together across questions.
+- H1 predicts activation separates within question and beats `think_logprob`.
+- H2 predicts that whatever separates the classes within question is generic
+  "depth into the trace" structure rather than a termination-specific state.
+
+Setup:
+- 58 ood_test rows, 32 questions, **16 carrying both labels** (as preregistered).
+  Most contribute exactly one YES and one NO row, so per-question concordance is
+  coarse (0, 0.5 or 1).
+- Nothing was refit. Scores are the frozen R001 depth-40 probe outputs (D010: the
+  val-selected depth), `think_logprob` from the cached D007 features, and the
+  released `token_length` as the sanity baseline.
+- A_q = fraction of YES×NO pairs within q ranked correctly, ties 0.5; macro-averaged
+  over the 16 questions. CIs and deltas from a 2,000-replicate bootstrap resampling
+  **questions**, paired across scores.
+
+Results:
+
+| score | macro paired concordance [95% CI] | questions with Δ_q > 0 |
+|---|---|---|
+| depth-40 activation probe | 0.938 [0.812, 1.000] | 15/16 |
+| `think_logprob` | 0.844 [0.656, 1.000] | 13/16 |
+| **`token_length` (sanity baseline)** | **0.938 [0.844, 1.000]** | **16/16** |
+
+Paired question-bootstrap deltas:
+
+| comparison | Δ | 95% CI | P(Δ>0) |
+|---|---|---|---|
+| activation − `think_logprob` | +0.094 | [+0.000, +0.250] | 0.882 |
+| **activation − `token_length`** | **+0.000** | **[−0.188, +0.125]** | 0.441 |
+
+Sign/correlation diagnostics over the 16 questions:
+- activation Δ_q > 0 on 15/16, two-sided binomial p = 0.0005;
+- Spearman(Δ_activation, Δ_think) = +0.385, p = 0.141;
+- questions where the output cue is wrong or uninformative (Δ_think ≤ 0): **3**
+  (`josephus_7`, `crt_three`, `dice_even_product`); activation is still positive on
+  2 of those 3, mean activation concordance there 0.667.
+
+Interpretation:
+The activation probe does separate YES from NO within question — 15/16 questions,
+sign-test p = 0.0005 — so the headline OOD result is **not** merely between-question
+topic structure, and it is not reducible to immediate `</think>` propensity within a
+question either (activation is positive on 2 of the 3 questions where the output cue
+points the wrong way, and beats it by +0.094 overall, though that delta is not
+resolved: P(Δ>0) = 0.88).
+
+But the sanity baseline is the finding. **Raw `token_length` matches the activation
+probe exactly (0.938 vs 0.938, paired Δ = 0.000 [−0.188, +0.125]) and is positive on
+16/16 questions** — within a question, the YES prefix is simply the longer one, by
+100–1,250 tokens. The within-question control that was designed to remove topic
+confounds does not remove, and probably concentrates, a trivial depth-into-the-trace
+cue. H2 is substantially strengthened: this experiment provides no evidence that the
+probe carries information beyond "how far into this trace are we", because the
+cheapest possible feature does equally well here.
+
+Note this does not contradict the audit's pooled length result (ood AUROC 0.584).
+Pooled across questions, absolute length is uninformative because questions differ in
+scale; *within* a question it is nearly decisive. The two facts together say the
+length cue is conditional-on-question, which is exactly the regime this control
+created.
+
+Evidence against that interpretation:
+- 16 questions, most contributing a single YES/NO pair, so each A_q is essentially a
+  coin-flip-resolution 0/1. The CIs reach 1.000 and the activation−length delta
+  spans [−0.19, +0.13]: this design cannot distinguish "equal" from "modestly
+  better" or "modestly worse". Treat the tie as *no evidence of an advantage*, not
+  as evidence of equality.
+- A length cue is not automatically an artifact. Later prefixes really are closer to
+  termination, so length is a legitimate — if trivial — predictor of the label. The
+  finding constrains what the probe can be claimed to know, not whether the label is
+  meaningful.
+- The activation representation is taken at the last prefix token of a sequence whose
+  length varies by 1,000+ tokens; positional information is available to the probe
+  by construction. That this is *how* it wins is untested here.
+- The three Δ_think ≤ 0 questions are three questions. 2/3 is not a result.
+- `token_length` is the released field, not a re-measurement, and pairs it with rows
+  whose labels came from resampling; no part of this run re-derives either.
+- Everything here is ood_test, 58 rows. It has now been looked at three times
+  (R001 evaluation, R002 deltas, R003). Further inspection of this split should stop.
+
+Decision:
+The planned residualization is now the wrong next experiment against the wrong
+nuisance variable. **R004 = the length control**, replicated on `val` and `test`
+(30 and 22 questions, more multi-row questions, and neither is the final OOD split)
+so the comparison has power: within-question concordance for the activation probe,
+`think_logprob` and `token_length`, plus the probe's within-question concordance
+restricted to length-matched or length-residualized comparisons. The question R004
+answers: does the activation probe know anything about imminent termination that
+prefix length does not already say? See `STATE.md` for the decision rule.
+
+Artifacts:
+- `artifacts/runs/r003_paired_ood/` (config, metrics, metadata, per_question.csv)
+- `artifacts/figures/r003_paired_questions.png`
+- `src/paired_question_analysis.py`

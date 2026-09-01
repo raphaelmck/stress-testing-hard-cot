@@ -1,0 +1,8 @@
+{
+  "run_id": "r003_paired_ood",
+  "commit": "0642469-dirty",
+  "upstream_data_commit": "4482324b5",
+  "started_utc": "2026-09-01T21:23:06Z",
+  "host": "cn-h002.server.mila.quebec",
+  "command": "src/paired_question_analysis.py --run-id r003_paired_ood"
+}

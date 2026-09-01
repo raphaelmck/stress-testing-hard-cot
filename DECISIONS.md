@@ -303,3 +303,42 @@ DECISIONS entry and a cross-fitting scheme clustered by question.
 Revisit if:
 A future experiment needs a trained output-level baseline. Then design the
 cross-fitting first, in writing, before seeing its OOD number.
+
+---
+
+## D011 — the within-question control is confounded by prefix length; length becomes the primary nuisance variable
+
+Date: 2026-09-01
+
+Context:
+D008 preregistered the within-question ood_test control as the clean test of whether
+probe scores track imminent termination with topic held fixed. R003 ran it. The
+activation probe separated 15/16 questions (sign test p = 0.0005) — but the released
+`token_length`, included only as a sanity baseline, matched it exactly (macro paired
+concordance 0.938 vs 0.938; paired delta 0.000 [-0.188, +0.125]) and was positive on
+16/16 questions. Within a question, the YES prefix is simply the longer one, by
+100-1,250 tokens.
+
+Decision:
+1. `token_length` is promoted from sanity baseline to **the primary nuisance
+   variable** for every subsequent experiment. Any claim that the probe carries
+   termination-specific information must be made against length, not only against
+   output-level features.
+2. The next experiment (R004) is the length control on `val` and `test`, not
+   residualization against the D007 output features. val/test have 30 and 22
+   questions with more multi-row questions, so the comparison has power that 16
+   mostly-1v1 ood questions do not.
+3. `ood_test` is now closed to further inspection until a preregistered final
+   evaluation. It has been read three times (R001, R002, R003).
+
+Reason:
+D008 was designed to remove between-question topic structure and it does. It does
+not remove depth-into-the-trace structure, and by holding the question fixed it
+arguably concentrates it. Reporting R003's activation result without the length
+baseline would have been the single most misleading thing this project could have
+published.
+
+Revisit if:
+R004 shows the probe beats length within question on val/test. Then residualization
+against the output features (the previously planned experiment) becomes the way to
+separate H1 from H2, and it should be run against length as well.

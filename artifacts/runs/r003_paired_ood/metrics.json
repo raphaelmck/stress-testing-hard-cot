@@ -1,0 +1,71 @@
+{
+  "run_id": "r003_paired_ood",
+  "split": "ood_test",
+  "depth": 40,
+  "depth_note": "val-selected depth (D010); the OOD-max depth 56 is not used",
+  "refit": "none -- frozen R001 probe scores and cached D007 features",
+  "n_rows_ood": 58,
+  "n_questions_total": 32,
+  "n_questions_both_labels": 16,
+  "macro_paired_concordance": {
+    "activation_depth40": 0.9375,
+    "think_logprob": 0.84375,
+    "token_length": 0.9375
+  },
+  "macro_paired_concordance_ci": {
+    "activation_depth40": {
+      "ci_lo": 0.8125,
+      "ci_hi": 1.0
+    },
+    "think_logprob": {
+      "ci_lo": 0.65625,
+      "ci_hi": 1.0
+    },
+    "token_length": {
+      "ci_lo": 0.84375,
+      "ci_hi": 1.0
+    }
+  },
+  "paired_deltas": {
+    "activation_depth40 - think_logprob": {
+      "ci_lo": 0.0,
+      "ci_hi": 0.25,
+      "frac_replicates_positive": 0.8825,
+      "n_replicates": 2000
+    },
+    "activation_depth40 - token_length": {
+      "ci_lo": -0.1875,
+      "ci_hi": 0.125,
+      "frac_replicates_positive": 0.441,
+      "n_replicates": 2000
+    }
+  },
+  "bootstrap": {
+    "n": 2000,
+    "unit": "question"
+  },
+  "sign_diagnostics": {
+    "n_delta_positive": {
+      "activation_depth40": 15,
+      "think_logprob": 13,
+      "token_length": 16
+    },
+    "n_questions": 16,
+    "activation_sign_test_p_two_sided": 0.000518798828125,
+    "spearman_delta_act_vs_delta_think": {
+      "rho": 0.3852941176470588,
+      "p": 0.14054417737367633
+    }
+  },
+  "output_cue_discordant": {
+    "definition": "questions with delta_think_logprob <= 0",
+    "n": 3,
+    "n_activation_delta_positive": 2,
+    "mean_activation_concordance": 0.6666666666666666,
+    "question_ids": [
+      "crt_three",
+      "dice_even_product",
+      "josephus_7"
+    ]
+  }
+}
