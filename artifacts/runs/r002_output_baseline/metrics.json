@@ -1,0 +1,186 @@
+{
+  "run_id": "r002_output_baseline",
+  "activation_run_id": "r001_qwen32b",
+  "primary_activation_depth": 40,
+  "primary_activation_note": "depth selected on val AUROC in R001; the descriptive OOD maximum (depth 56, 0.964) is deliberately NOT the comparator",
+  "primary_scalar": "think_logprob",
+  "C_grid": [
+    0.01,
+    0.1,
+    1.0,
+    10.0
+  ],
+  "selection_split": "val",
+  "bootstrap": {
+    "n": 2000,
+    "clustered_by": "question_id",
+    "paired": "same resampled clusters for both score vectors"
+  },
+  "think_token_id": 151668,
+  "scalars": [
+    {
+      "baseline": "scalar:think_logprob",
+      "orientation": "as-is",
+      "orientation_chosen_on": "val",
+      "val_auroc_unoriented": 0.7708333333333334,
+      "primary": true,
+      "train_auroc": 0.5074316249999999,
+      "val_auroc": 0.7708333333333334,
+      "val_ci_lo": 0.634991361788618,
+      "val_ci_hi": 0.8977350713012477,
+      "test_auroc": 0.6949702541914549,
+      "test_ci_lo": 0.6028684875066455,
+      "test_ci_hi": 0.8062078019504875,
+      "ood_test_auroc": 0.807372175980975,
+      "ood_test_ci_lo": 0.6964178571428572,
+      "ood_test_ci_hi": 0.9051521739130434
+    },
+    {
+      "baseline": "scalar:think_logit",
+      "orientation": "as-is",
+      "orientation_chosen_on": "val",
+      "val_auroc_unoriented": 0.529320987654321,
+      "primary": false,
+      "train_auroc": 0.498368375,
+      "val_auroc": 0.529320987654321,
+      "val_ci_lo": 0.38990892088542733,
+      "val_ci_hi": 0.6989077380952381,
+      "test_auroc": 0.6014061654948621,
+      "test_ci_lo": 0.48409921713250514,
+      "test_ci_hi": 0.7242336408466309,
+      "ood_test_auroc": 0.5766944114149821,
+      "ood_test_ci_lo": 0.44061364850427354,
+      "ood_test_ci_hi": 0.7030471380471378
+    },
+    {
+      "baseline": "scalar:think_margin",
+      "orientation": "as-is",
+      "orientation_chosen_on": "val",
+      "val_auroc_unoriented": 0.76195987654321,
+      "primary": false,
+      "train_auroc": 0.5076860000000001,
+      "val_auroc": 0.76195987654321,
+      "val_ci_lo": 0.6246346302748741,
+      "val_ci_hi": 0.8906928983714697,
+      "test_auroc": 0.6838831800973499,
+      "test_ci_lo": 0.5905601153504881,
+      "test_ci_hi": 0.7898772444046833,
+      "ood_test_auroc": 0.8026159334126041,
+      "ood_test_ci_lo": 0.6935483870967742,
+      "ood_test_ci_hi": 0.9018665520612128
+    },
+    {
+      "baseline": "scalar:next_token_entropy",
+      "orientation": "as-is",
+      "orientation_chosen_on": "val",
+      "val_auroc_unoriented": 0.5046296296296297,
+      "primary": false,
+      "train_auroc": 0.50338975,
+      "val_auroc": 0.5046296296296297,
+      "val_ci_lo": 0.3589699074074075,
+      "val_ci_hi": 0.6312297549833886,
+      "test_auroc": 0.4640346133044889,
+      "test_ci_lo": 0.27884526529807546,
+      "test_ci_hi": 0.638607015045624,
+      "ood_test_auroc": 0.5778834720570749,
+      "ood_test_ci_lo": 0.4421004271859606,
+      "ood_test_ci_hi": 0.7216016666666667
+    },
+    {
+      "baseline": "scalar:top1_logprob",
+      "orientation": "as-is",
+      "orientation_chosen_on": "val",
+      "val_auroc_unoriented": 0.5223765432098765,
+      "primary": false,
+      "train_auroc": 0.49451175,
+      "val_auroc": 0.5223765432098765,
+      "val_ci_lo": 0.39483071289740385,
+      "val_ci_hi": 0.6908725071225068,
+      "test_auroc": 0.6084369929691725,
+      "test_ci_lo": 0.42825972042344734,
+      "test_ci_hi": 0.7839509875850559,
+      "ood_test_auroc": 0.4482758620689655,
+      "ood_test_ci_lo": 0.31106410256410255,
+      "ood_test_ci_hi": 0.5820603174603173
+    },
+    {
+      "baseline": "scalar:top1_is_think",
+      "orientation": "as-is",
+      "orientation_chosen_on": "val",
+      "val_auroc_unoriented": 0.5,
+      "primary": false,
+      "train_auroc": 0.5,
+      "val_auroc": 0.5,
+      "val_ci_lo": 0.5,
+      "val_ci_hi": 0.5,
+      "test_auroc": 0.5,
+      "test_ci_lo": 0.5,
+      "test_ci_hi": 0.5,
+      "ood_test_auroc": 0.5,
+      "ood_test_ci_lo": 0.5,
+      "ood_test_ci_hi": 0.5
+    }
+  ],
+  "multivariate": {
+    "baseline": "multivariate:output_only",
+    "C": 0.01,
+    "features": [
+      "think_logit",
+      "think_logprob",
+      "think_margin",
+      "next_token_entropy",
+      "top1_logprob",
+      "top1_is_think"
+    ],
+    "val_auroc_by_C": {
+      "0.01": 0.7068,
+      "0.1": 0.6451,
+      "1.0": 0.6343,
+      "10.0": 0.6304
+    },
+    "train_auroc": 0.51235875,
+    "val_auroc": 0.7067901234567902,
+    "val_ci_lo": 0.5476143159966689,
+    "val_ci_hi": 0.8367377357447044,
+    "test_auroc": 0.5608436992969172,
+    "test_ci_lo": 0.44344018348863307,
+    "test_ci_hi": 0.6919014522334833,
+    "ood_test_auroc": 0.7265160523186682,
+    "ood_test_ci_lo": 0.6066762804259636,
+    "ood_test_ci_hi": 0.843308559983133
+  },
+  "paired_deltas": {
+    "multivariate:output_only|test": {
+      "delta_point": 0.3477555435370471,
+      "ci_lo": 0.21110906064553484,
+      "ci_hi": 0.46968886077112376,
+      "frac_replicates_positive": 1.0,
+      "n_replicates": 2000,
+      "n_discarded": 0
+    },
+    "multivariate:output_only|ood_test": {
+      "delta_point": 0.17717003567181933,
+      "ci_lo": 0.06416951566951569,
+      "ci_hi": 0.29107545045045036,
+      "frac_replicates_positive": 0.9995,
+      "n_replicates": 2000,
+      "n_discarded": 0
+    },
+    "scalar:think_logprob|test": {
+      "delta_point": 0.21362898864250945,
+      "ci_lo": 0.09126934523809524,
+      "ci_hi": 0.31084057232112383,
+      "frac_replicates_positive": 1.0,
+      "n_replicates": 2000,
+      "n_discarded": 0
+    },
+    "scalar:think_logprob|ood_test": {
+      "delta_point": 0.09631391200951256,
+      "ci_lo": 1.0824674490095292e-16,
+      "ci_hi": 0.20125701530612233,
+      "frac_replicates_positive": 0.975,
+      "n_replicates": 2000,
+      "n_discarded": 0
+    }
+  }
+}

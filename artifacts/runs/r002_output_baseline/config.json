@@ -1,0 +1,37 @@
+{
+  "run_id": "r002_output_baseline",
+  "source_run": "r001_qwen32b",
+  "source_sample_sha256": "c261306dde08c8b9208f421fc898b1e9e6c11b227d2e6db2bbb399ab295b669e",
+  "model": "Qwen/Qwen3-32B",
+  "revision": "9216db5781bf21249d130ec9da846c4624c16137",
+  "features_cached": [
+    "think_logit",
+    "think_logprob",
+    "think_margin",
+    "next_token_entropy",
+    "top1_token_id",
+    "top1_logprob"
+  ],
+  "features_used_multivariate": [
+    "think_logit",
+    "think_logprob",
+    "think_margin",
+    "next_token_entropy",
+    "top1_logprob",
+    "top1_is_think"
+  ],
+  "excluded": {
+    "top1_token_id": "ids have no ordinal meaning; used only via top1_is_think"
+  },
+  "primary_scalar": "think_logprob",
+  "primary_activation_depth": 40,
+  "C_grid": [
+    0.01,
+    0.1,
+    1.0,
+    10.0
+  ],
+  "selection_split": "val",
+  "n_bootstrap": 2000,
+  "seed": 0
+}

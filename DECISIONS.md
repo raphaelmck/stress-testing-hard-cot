@@ -258,3 +258,48 @@ Consequences:
 Revisit if:
 Mila queue times make the sprint infeasible, in which case a paid 80 GB instance
 elsewhere is preferable to any quantized run.
+
+---
+
+## D010 — R002 comparator, feature handling, and paired inference
+
+Date: 2026-09-01
+
+Context:
+R001 gave OOD AUROC 0.904 at the val-selected depth 40 and 0.964 at depth 56, where
+depth 56 was identified as the maximum over the five predeclared depths *after*
+looking at OOD. R002 compares an activation probe against output-level baselines
+whose C is selected on val.
+
+Decision:
+1. The primary activation comparator for every explanation experiment is the
+   **val-selected depth (40, OOD 0.904)**. Depth 56 / 0.964 is reported only as
+   "descriptive maximum over the five predeclared depths". Using an OOD-selected
+   depth against a val-selected baseline would give the activation side a post-hoc
+   advantage.
+2. `top1_token_id` is never a numeric feature. Token ids have no ordinal meaning;
+   it enters only as `top1_is_think = (top1_token_id == </think>)`.
+3. Method comparisons use a **paired** question-clustered bootstrap of
+   Δ = AUROC(activation) − AUROC(output), resampling the same clusters for both
+   score vectors — never two independent CIs, which are far too wide for a
+   difference between scores evaluated on identical rows.
+4. Scalar baselines are scored directly (untrained); orientation is fixed on val
+   and never on ood_test.
+
+Reason:
+Each of these is a way the comparison could silently tilt toward the conclusion we
+are trying to test. The paired bootstrap in particular is the difference between
+"the intervals overlap, so who knows" and an actual estimate of the advantage.
+
+Consequence discovered in R002:
+The multivariate output baseline is fit on train, where every output feature is at
+chance (AUROC ~0.51) because the train labels are distance-based. It therefore
+lands *below* the untrained `think_logprob` scalar (0.727 vs 0.807) and is not the
+strong H0 baseline it was intended to be. The best available output baseline is the
+untrained scalar. Building a trained output baseline would require fitting on
+evaluation-style labels, which D005 forbids; any future attempt needs its own
+DECISIONS entry and a cross-fitting scheme clustered by question.
+
+Revisit if:
+A future experiment needs a trained output-level baseline. Then design the
+cross-fitting first, in writing, before seeing its OOD number.

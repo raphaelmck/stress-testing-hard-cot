@@ -1,0 +1,8 @@
+{
+  "run_id": "r002_output_baseline",
+  "commit": "7a0123f-dirty",
+  "upstream_data_commit": "4482324b5",
+  "started_utc": "2026-09-01T20:53:00Z",
+  "host": "cn-h002.server.mila.quebec",
+  "command": "src/fit_output_baselines.py --run-id r002_output_baseline"
+}

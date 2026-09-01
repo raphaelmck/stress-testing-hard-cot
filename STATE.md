@@ -15,6 +15,8 @@ Last updated: 2026-09-01
   depended on it.
 - **R001 complete on the Mila cluster** (A100-80GB, 53.7 min, job 10621220).
   See `RESULTS.md` R001 for the full table and caveats.
+- **R002 complete** (no GPU): D007 embargo lifted, output-level baselines fit,
+  comparator/inference rules recorded as D010. See `RESULTS.md` R002.
 
 ## R001 headline
 
@@ -37,37 +39,55 @@ stops**. All pre-run gates passed (CUDA residency, activation site == model's ow
 
 ## Current beliefs
 
-Informal research beliefs, not statistical probabilities. R001 was predicted by all
-three hypotheses, so it moved them little; the small shift is from the depth profile
-(peak at 56, not at the final layer), which is weak evidence at these CIs.
+Informal research beliefs, not statistical probabilities. R002 moved these: a single
+untrained scalar recovers most of the distance from chance, but a paired-bootstrap
+advantage for activations survives it.
 
-- H0 output-proximal: 35%
-- H1 broader latent state: 45%
-- H2 proxy/dataset structure: 20%
+- H0 output-proximal: 45% (up from 35%)
+- H1 broader latent state: 40%
+- H2 proxy/dataset structure: 15%
+
+R002 also produced a structural fact that constrains both: the output features are at
+chance on the distance-based **train** labels (AUROC ~0.51) yet reach 0.81 OOD, and
+the activation probe transfers across that same label-construction gap at 0.90.
+
+## R002 headline
+
+Primary comparator = val-selected depth 40, OOD 0.904 (D010; NOT depth 56 / 0.964).
+
+| baseline | OOD AUROC [95% CI] |
+|---|---|
+| activation, depth 40 | 0.904 [0.834, 0.966] |
+| `think_logprob` (untrained scalar) | 0.807 [0.696, 0.905] |
+| `think_margin` | 0.803 [0.694, 0.902] |
+| multivariate output-only (handicapped, see R002) | 0.727 [0.607, 0.843] |
+
+Paired question-clustered delta, depth 40 − `think_logprob`, on ood_test:
+**+0.096 [+0.000, +0.201]**, P(Δ>0) = 0.975 → the 0.05–0.15 band.
+`top1_is_think` is identically zero on all 4,216 rows; mean p(`</think>`) ~2e-12.
 
 ## Next experiment (exactly one)
 
-**R002 — output-level baseline.** Fit the identical pipeline (L2 logistic, same C
-grid, val-only selection, question-clustered bootstrap) to the D007 features already
-cached in the R001 pass — `think_logit`, `think_logprob`, `think_margin`,
-`next_token_entropy`, `top1_logprob` — with no hidden activations. Same rows, same
-splits. No GPU needed.
+**R003 — residual/conditional test.** Does the depth-40 activation advantage survive
+removing what the output distribution already knows? Regress the output-level
+features out of the activation representation (or equivalently fit the probe on the
+residual), refit under the identical D005 protocol, and evaluate with the same
+paired question-clustered bootstrap against both the raw depth-40 probe and
+`think_logprob`. No GPU needed.
 
-The D007 embargo lifts with the committed R001 entry, by its own terms.
+Decision rule on the residualised probe's OOD AUROC:
 
-Decision rule, on OOD AUROC of the best output-level baseline vs R001's 0.964:
+- drops to within ~0.03 of `think_logprob` (≈0.81) -> the advantage was output
+  information after all; H0 is close to sufficient and the project's answer is a
+  sharp near-negative result.
+- stays within ~0.03 of 0.904 -> the activation signal is largely independent of
+  immediate `</think>` propensity; H1 becomes the leading explanation and D008
+  (within-question paired control) becomes the next target.
+- lands between -> report the partition honestly; prefer D008 over more probing.
 
-- within ~0.03 -> H0 is doing most of the work; next step is residualising
-  activations against these features, not more probing.
-- 0.05–0.15 below -> a real activation residual exists; go to the depth-vs-output
-  timing comparison (does depth 40 beat the final-layer output signal?).
-- more than ~0.15 below -> H0 is weak here; prioritise D008 within-question paired
-  analysis and the continuous-target check.
-
-Report the baseline for each feature alone as well as the combined set; a single
-feature matching 0.96 is a much stronger H0 result than a five-feature combination.
+Do not run D008 yet. Do not fit new activation probes at other depths.
 
 ## Current blocker
 
-None. R002 needs no GPU: everything runs from
-`artifacts/runs/r001_qwen32b/probe_scores.csv` and the cached output features.
+None. R003 needs no GPU: it runs from the cached R001 activations
+(`artifacts/runs/r001_qwen32b/activations/`) and the D007 output features.

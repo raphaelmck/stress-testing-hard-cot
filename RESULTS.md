@@ -149,3 +149,117 @@ Artifacts:
 - `artifacts/runs/r001_qwen32b_smoke/`, `artifacts/runs/r001_qwen32b_stress/`
 - `artifacts/tables/reproduction_layer_auroc.csv`
 - `artifacts/figures/reproduction_layer_auroc.png`
+
+---
+
+## R002 — output-level (H0) baselines from the cached D007 features
+
+Commit: entry written at the following commit; run produced under `7a0123f` + `src/fit_output_baselines.py`
+Run IDs: `r002_output_baseline` (features cached during `r001_qwen32b`; no new forward pass)
+Date: 2026-09-01
+
+Question:
+How much of R001's cross-domain activation-probe performance is reducible to the
+model's immediate next-token propensity to emit `</think>` at the same position?
+
+Hypothesis predictions:
+- H0 predicts an output-level score approaches the activation probe's OOD AUROC.
+- H1 predicts the activation probe retains a substantial advantage over it.
+- H2 is largely orthogonal here, but predicts nothing forces the train-label
+  construction and the eval-label construction to agree.
+
+Setup:
+- Comparator is the **val-selected** activation depth, **40, OOD 0.904** (D005).
+  R001's descriptive maximum (depth 56, 0.964) is *not* used: it was identified by
+  looking at OOD, and comparing it against a val-selected baseline would give the
+  activation side a post-hoc advantage.
+- Features are the D007 values cached at the same last-real-prefix token during the
+  R001 pass: `think_logit`, `think_logprob`, `think_margin`, `next_token_entropy`,
+  `top1_logprob`, and `top1_is_think = (top1_token_id == 151668)`.
+  `top1_token_id` is never used as a number — token ids have no ordinal meaning.
+- Scalars are used directly as the score for `label=yes`; orientation is fixed on
+  val, never on OOD (all six came out "as-is").
+- Multivariate baseline: standardizer + L2 logistic on all six, fit on **train only**,
+  C in {0.01, 0.1, 1, 10} selected on **val only** — exactly the R001 procedure.
+- CIs: 2,000 question-clustered bootstrap replicates (D006). Deltas use a **paired**
+  bootstrap: the same resampled clusters score both models.
+
+Results:
+
+| baseline | train | val | test [95% CI] | OOD [95% CI] |
+|---|---|---|---|---|
+| activation probe, depth 40 (R001) | 1.000 | 0.897 | 0.909 [0.835, 0.966] | **0.904 [0.834, 0.966]** |
+| `think_logprob` (primary scalar) | 0.507 | 0.771 | 0.695 [0.603, 0.806] | **0.807 [0.696, 0.905]** |
+| `think_margin` | 0.508 | 0.762 | 0.684 [0.591, 0.790] | 0.803 [0.694, 0.902] |
+| `think_logit` | 0.498 | 0.529 | 0.601 [0.484, 0.724] | 0.577 [0.441, 0.703] |
+| `next_token_entropy` | 0.503 | 0.505 | 0.464 [0.279, 0.639] | 0.578 [0.442, 0.722] |
+| `top1_logprob` | 0.495 | 0.522 | 0.608 [0.428, 0.784] | 0.448 [0.311, 0.582] |
+| `top1_is_think` | 0.500 | 0.500 | 0.500 | 0.500 (degenerate, see below) |
+| multivariate output-only (C=0.01) | 0.512 | 0.707 | 0.561 [0.443, 0.692] | 0.727 [0.607, 0.843] |
+
+Paired question-clustered deltas, activation(depth 40) − output:
+
+| comparison | test | ood_test |
+|---|---|---|
+| vs `think_logprob` | +0.214 [+0.091, +0.311] | **+0.096 [+0.000, +0.201]**, P(Δ>0)=0.975 |
+| vs multivariate output-only | +0.348 [+0.211, +0.470] | +0.177 [+0.064, +0.291], P(Δ>0)=0.9995 |
+
+Two facts about the features themselves, both consequential:
+
+1. `top1_is_think` is **identically zero on all 4,216 rows** — the argmax next token
+   is never `</think>` at any prefix in this dataset. Mean p(`</think>`) at the next
+   position is ~2e-12 (mean logprob ≈ −27 to −36 by split).
+2. Every output feature is at chance on **train** (AUROC 0.495–0.508), while the
+   same features reach 0.77–0.81 on val/ood. The train labels are distance-based
+   ("25–55 words from the end" vs "300+"), and being 40 words from the end evidently
+   says almost nothing about whether the *very next token* is `</think>`.
+
+Interpretation:
+The output-proximal explanation is a large part of the story but does not close it.
+A single untrained scalar — the log-probability the model assigns to `</think>` at
+the next position — reaches OOD AUROC 0.807 against the probe's 0.904, i.e. it
+recovers most of the distance from chance. Under the preregistered bands, the paired
+delta of +0.096 [+0.000, +0.201] sits in the **0.05–0.15 "meaningful unexplained
+activation signal"** band, with the CI's lower edge at zero: H0 is substantially
+supported, and not sufficient. Notably the surviving signal is *not* explained by the
+probe having learned output propensity, because the labels it was trained on are
+uncorrelated with that propensity (train AUROC 0.507).
+
+Evidence against that interpretation:
+- The delta's 95% CI touches 0.000 and P(Δ>0) is 0.975 — one or two questions'
+  worth of resampling separates "activation advantage" from "no advantage". With 32
+  OOD clusters this experiment cannot resolve a 0.10 difference confidently.
+- The multivariate output baseline is **handicapped and should not be read as the
+  strong H0 baseline**: it is fit on train labels its features cannot predict
+  (train AUROC 0.512), so C=0.01 shrinks it toward noise and it lands *below* the
+  untrained scalar (0.727 vs 0.807). The honest best output baseline here is the
+  scalar. A properly trained output baseline would need labels of the evaluation
+  kind, which D005 forbids fitting on — this asymmetry favours the activation side
+  and is not resolved by this run.
+- `think_logprob`'s advantage over `think_logit` (0.807 vs 0.577) means the useful
+  quantity is normalised by the full partition function, so "the `</think>` logit"
+  as such is not the carrier; the softmax denominator matters.
+- The absolute probabilities are ~1e-12. Calling this an "output-level precursor" is
+  a statement about the ordering of a far tail, not about the model being close to
+  terminating. What the ordering of that tail reflects is itself unexplained.
+- test and ood_test disagree in level for the output scalars (0.695 vs 0.807) while
+  the activation probe is flat (0.909 vs 0.904). The splits differ in label purity,
+  so some of this is label noise, but it means the output baseline's OOD number is
+  the more favourable of the two available estimates.
+- Depth 56 vs 64 in R001 is still not evidence against H0: representations can
+  reorganise between layers while the LM head preserves the relevant information.
+  This run does not test that.
+
+Decision:
+Under the R002 bands: activation advantage ≈ 0.096 → **test conditional/residual
+information next**, not D008, and not another activation probe. R003 = residualise
+the depth-40 activations against the output-level features (regress the output score
+out of the probe input, or fit the probe on the residual and on
+[activations ⟂ output features]) and re-evaluate OOD with the same paired bootstrap.
+The question R003 answers: does the activation advantage survive removing what the
+output distribution already knows?
+
+Artifacts:
+- `artifacts/runs/r002_output_baseline/` (config, metrics, metadata, baseline_scores.csv)
+- `artifacts/tables/output_baseline_auroc.csv`
+- `src/fit_output_baselines.py`
