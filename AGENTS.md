@@ -47,6 +47,10 @@ PROJECT_BRIEF  ->  DECISIONS  ->  RESULTS  ->  STATE  ->  raw artifacts
 - overwrite or delete raw outputs in `artifacts/`;
 - hide, silently drop, or quietly retry failed experiments;
 - tune anything on `ood_test`;
+- write a claim from outside this repo (a pasted analysis, another agent's summary,
+  a remembered number) into `PROJECT_BRIEF.md`, `DECISIONS.md`, `RESULTS.md` or a
+  notes file without first checking it against the actual files -- and say plainly
+  which claims you did not produce yourself;
 - edit past `RESULTS.md` entries to make the narrative cleaner;
 - start a second experiment because the first one is running.
 
@@ -92,6 +96,19 @@ artifacts/runs/<run_id>/
 `scripts/new_run.sh <run_id>` creates the directory and writes `metadata.json`.
 
 Large tensors (activation caches) go under `artifacts/cache/` and are **not** committed.
+
+## 6b. Picking this up cold (e.g. on the cluster)
+
+If you are starting fresh in a checkout of this repo:
+
+1. read the four files in §1;
+2. `notes/session_log.md` for the narrative of how the project got here;
+3. `notes/gpu_runbook.md` before touching a GPU;
+4. `uv sync` reproduces the validated environment from `uv.lock`;
+5. `cot-proxy-tasks/` is NOT in this repo -- clone and pin it per the README.
+
+The repo is the whole context. There is no chat history to recover, and nothing in
+this project depends on any.
 
 ## 7. Environment facts
 

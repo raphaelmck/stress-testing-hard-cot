@@ -52,6 +52,9 @@ git clone https://github.com/Centrattic/cot-proxy-tasks.git
 git -C cot-proxy-tasks checkout 4482324b5e4a6277fa3bd544785cbd9875e11694
 ```
 
+On the cluster, clone this repo into `$SCRATCH` and follow
+[`notes/gpu_runbook.md`](notes/gpu_runbook.md) from step 1.
+
 ### Compute
 
 `Qwen/Qwen3-32B` is 32.8B parameters, ~64 GB in bf16. It does **not** fit on the local
@@ -63,8 +66,10 @@ so the same `uv sync` works in both places.
 
 ## Running R001 on a GPU
 
-`Qwen/Qwen3-32B` needs an 80 GB card. Full step-by-step runbook, including Colab CLI
-setup and the pre-launch verification gates: [`notes/gpu_runbook.md`](notes/gpu_runbook.md).
+`Qwen/Qwen3-32B` needs an 80 GB card (65.5 GB in bf16). Compute is the **Mila
+cluster** -- `--gres=gpu:h100:1` or `--gres=gpu:a100l:1`. Full step-by-step runbook
+with the pre-launch verification gates: [`notes/gpu_runbook.md`](notes/gpu_runbook.md).
+Batch script: `scripts/r001_extract.sbatch`.
 
 ## Working with agents
 

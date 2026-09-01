@@ -224,3 +224,37 @@ the data was seen. Preserve the ordering: reproduce first, explain second.
 Revisit if:
 The reproduction fails (max OOD AUROC < 0.75), in which case there is no phenomenon to explain
 and this control is moot until the pipeline is fixed.
+
+---
+
+## D009 — Compute is the Mila cluster (H100 / a100l 80 GB), not Colab
+
+Date: 2026-09-01
+
+Context:
+Qwen3-32B is 65.5 GB in bf16 and needs an 80 GB card. Colab was evaluated first: it
+does offer A100 80 GB and H100 tiers, and the official `google-colab-cli` would have
+suited a script-shaped workload. But nothing reachable with the available Colab
+compute credits could hold the model resident.
+
+Decision:
+Run R001 on the Mila cluster: `--gres=gpu:h100:1` or `--gres=gpu:a100l:1` (the 80 GB
+A100 variant). Plain `a100` may be the 40 GB variant and must not be used. Runbook:
+`notes/gpu_runbook.md`; batch script: `scripts/r001_extract.sbatch`.
+
+Reason:
+Quantizing to fit a smaller card would alter the activations under study and would
+break the R001 debug rule -- a sub-0.75 OOD AUROC could not be distinguished from a
+quantization artifact (D004). Renting an 80 GB card is the only option that keeps the
+reproduction interpretable.
+
+Consequences:
+- HF cache goes on `$SCRATCH`, not `$HOME`; weights are prefetched from a login node
+  so GPU time is not spent downloading 65 GB.
+- Jobs are resumable by design, so pre-emption costs shards, not the run.
+- The D004 prompt assertion must be re-run on the cluster before extraction, since
+  the environment there is rebuilt from `uv.lock` rather than inherited.
+
+Revisit if:
+Mila queue times make the sprint infeasible, in which case a paid 80 GB instance
+elsewhere is preferable to any quantized run.

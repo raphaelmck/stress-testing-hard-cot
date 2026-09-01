@@ -50,8 +50,8 @@ Informal research beliefs, not statistical probabilities. No activation evidence
 
 ## R001 next experiment
 
-Run the preregistered Qwen3-32B activation-probe reproduction. Full runbook:
-`notes/gpu_runbook.md`.
+Run the preregistered Qwen3-32B activation-probe reproduction on the Mila
+cluster. Full runbook: `notes/gpu_runbook.md`.
 
 Before full extraction, on the real GPU:
 
@@ -78,9 +78,12 @@ On max OOD AUROC across the five predeclared depths:
 
 ## Current blocker
 
-Access to a CUDA GPU capable of keeping Qwen3-32B bf16 fully resident (~65.5 GB
-weights; needs an 80 GB card -- A100 80GB, H100, or larger). The 40 GB A100 variant
-will abort by design rather than offload.
+None. Compute is resolved: **Mila cluster**, `--gres=gpu:h100:1` or
+`--gres=gpu:a100l:1` (80 GB). Plain `a100` may be the 40 GB variant and must not be
+used -- the extractor aborts rather than offloading (D004, D009).
+
+R001 is ready to run. Follow `notes/gpu_runbook.md`; the batch script is
+`scripts/r001_extract.sbatch`.
 
 **Stop coding.** The infrastructure is sufficient; further engineering before real
 data has diminishing returns.

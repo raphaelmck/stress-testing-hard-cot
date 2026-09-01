@@ -1,124 +1,104 @@
-# R001 GPU runbook — Qwen3-32B activation extraction
+# R001 GPU runbook — Qwen3-32B activation extraction on the Mila cluster
 
-Everything that can be done locally is done. This is the exact sequence for the GPU
-stage. Read `STATE.md` first; do not deviate from the frozen decisions in
-`DECISIONS.md` to make something fit.
+Everything that can be done on a laptop is done and committed. This is the exact
+sequence for the GPU stage. Read `STATE.md` and `DECISIONS.md` first; do not deviate
+from the frozen decisions to make something fit.
 
----
-
-## 0. Choose the path: Colab CLI, not the VS Code extension
-
-Two official routes exist as of 2026:
-
-| | Colab **CLI** (`google-colab-cli`) | Colab **VS Code extension** |
-|---|---|---|
-| Shape | run a local script on a remote VM, retrieve files | notebook cells against a remote kernel |
-| Fits R001? | **yes** | poorly |
-| Long unattended run | yes, with keep-alive daemon | needs the editor connected |
-| Artifact retrieval | `colab download` | manual |
-
-**Use the CLI.** R001 is a script that runs ~40 minutes and emits ~215 MB of shards;
-it is not notebook work. The extension is the better tool for interactive poking,
-and you can attach it to the same session later via `colab url --open` if you want
-to inspect something by hand.
-
-Install:
-
-```bash
-uv tool install google-colab-cli
-colab version
-```
-
-macOS and Linux only (no Windows). Auth is `adc` by default; `colab new` will walk
-you through sign-in on first use.
+Compute: **Mila cluster**, H100 (80 GB) or `a100l` (A100 80 GB). Colab was evaluated
+and rejected — see `DECISIONS.md` D009.
 
 ---
 
-## 1. Provision the GPU
+## 0. What this run needs
+
+- 80 GB of GPU memory, single card. Qwen3-32B is 65.5 GB in bf16.
+  The extractor **aborts** if any parameter lands on CPU/disk (D004); it will not
+  silently offload, so an undersized card fails fast.
+- ~70 GB of disk for the HF model cache (put it on `$SCRATCH`, not `$HOME`).
+- ~1.5 GB for the upstream dataset clone.
+- Roughly 30–50 min of H100 time for the extraction itself, plus model load.
+- Output is tiny: ~215 MB of activations for all 4,216 rows.
+
+**Verify the partition/GPU names on the cluster rather than trusting this file:**
 
 ```bash
-colab new -s r001 --gpu H100
-colab status -s r001
+sinfo -o "%20P %10G %10D %t" | sort -u        # partitions and gres names
+sacctmgr show assoc where user=$USER format=account,partition,qos
 ```
-
-**Prefer H100.** It is 80 GB. Colab's A100 exists in both 40 GB and 80 GB variants
-and you do not control which you get; Qwen3-32B needs 65.5 GB in bf16, so a 40 GB
-card cannot hold it. If you do use `--gpu A100`, verify before going further:
-
-```bash
-echo "import torch; p=torch.cuda.get_device_properties(0); print(p.name, p.total_memory/1e9)" | colab exec -s r001
-```
-
-Anything under ~79 GB: `colab stop -s r001` and provision again. Do not try to make
-it fit. The extractor will abort by design rather than offload to CPU (D004).
 
 ---
 
-## 2. Stage the code and data on the VM
-
-Our repo has no remote, so upload the four source files. The upstream dataset is
-public and clones far faster on the VM than it uploads.
+## 1. First-time setup (login node)
 
 ```bash
-colab exec -s r001 <<'PY'
-import subprocess, pathlib
-root = pathlib.Path("/content/nanda-app")
-(root / "src").mkdir(parents=True, exist_ok=True)
-subprocess.run(["git", "clone", "--quiet",
-                "https://github.com/Centrattic/cot-proxy-tasks.git",
-                str(root / "cot-proxy-tasks")], check=True)
-subprocess.run(["git", "-C", str(root / "cot-proxy-tasks"), "checkout", "--quiet",
-                "4482324b5e4a6277fa3bd544785cbd9875e11694"], check=True)
-print("upstream data ready")
-PY
+cd $SCRATCH
+git clone https://github.com/raphaelmck/nanda-w27-app.git
+cd nanda-w27-app
 
-for f in task1_data.py extract_task1_activations.py fit_task1_probe.py; do
-  colab upload -s r001 "src/$f" "/content/nanda-app/src/$f"
-done
-colab ls -s r001 /content/nanda-app/src
+# upstream dataset -- gitignored here, pinned by commit (D003)
+git clone https://github.com/Centrattic/cot-proxy-tasks.git
+git -C cot-proxy-tasks checkout 4482324b5e4a6277fa3bd544785cbd9875e11694
 ```
 
-The scripts resolve every path from `__file__`, so this layout
-(`nanda-app/src/*.py` beside `nanda-app/cot-proxy-tasks/`) is all they need.
-`artifacts/` is created on the VM automatically.
+Python env. The lockfile resolves for linux/x86_64, so `uv sync` reproduces the
+validated environment exactly:
+
+```bash
+command -v uv || curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+uv sync
+uv run python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+```
+
+If `uv` is unavailable, `module avail python` and build a 3.12 venv from
+`pyproject.toml` — but prefer `uv sync`, because the lockfile is what makes a
+`RESULTS.md` commit hash meaningful.
+
+Point the HF cache at scratch so 65 GB does not land in `$HOME` (which has a small
+quota) and survives between jobs:
+
+```bash
+export HF_HOME=$SCRATCH/hf_cache
+mkdir -p $HF_HOME
+```
+
+Add that export to your `~/.bashrc` or to every job script — a job that silently
+re-downloads 65 GB wastes most of its allocation.
+
+**Prefetch the weights from a login node** (login nodes have internet; this avoids
+burning GPU time on a download):
+
+```bash
+HF_HOME=$SCRATCH/hf_cache uv run python -c "
+from huggingface_hub import snapshot_download
+p = snapshot_download('Qwen/Qwen3-32B',
+                      revision='9216db5781bf21249d130ec9da846c4624c16137')
+print(p)
+"
+du -sh $SCRATCH/hf_cache
+```
 
 ---
 
-## 3. Install dependencies — and do NOT force our lockfile
+## 2. GATE: re-verify the prompt on the cluster
 
-Colab ships its own CUDA-matched torch. Replacing it risks a broken CUDA build for
-no benefit; torch version is not what determines our prompt format.
-
-```bash
-colab install -s r001 "transformers==5.16.1" accelerate scikit-learn hf_transfer
-```
-
-`transformers` **is** pinned, deliberately: the prompt string comes from
-`tokenizer.apply_chat_template`, so the transformers version plus the model revision
-jointly determine it (D004). Pinning to the version validated locally is what makes
-the next step meaningful rather than decorative.
-
----
-
-## 4. GATE: re-verify the prompt on the VM
-
-This is the check that catches a silent activation-site mismatch. It must pass on
-the VM, not just on the laptop.
+This catches a silent activation-site mismatch and must pass **on the cluster**, not
+just on the laptop. The prompt string comes from `tokenizer.apply_chat_template`, so
+the transformers version and the model revision jointly determine it (D004).
 
 ```bash
-colab exec -s r001 <<'PY'
-import sys; sys.path.insert(0, "/content/nanda-app/src")
-import task1_data as T
+HF_HOME=$SCRATCH/hf_cache uv run python -c "
+import sys; sys.path.insert(0,'src')
+import task1_data as T, transformers, torch
 from transformers import AutoTokenizer
-import transformers, torch
-print("transformers", transformers.__version__, "| torch", torch.__version__)
+print('transformers', transformers.__version__, '| torch', torch.__version__)
 tok = AutoTokenizer.from_pretrained(T.MODEL_ID, revision=T.MODEL_REVISION)
-p = T.load_build_thinking_prompt()(tok, "What is 2+2?", "Let me think. Two plus two")
+p = T.load_build_thinking_prompt()(tok, 'What is 2+2?', 'Let me think. Two plus two')
 print(repr(p))
-assert p.count("<think>") == 1 and "</think>" not in p, "PROMPT FORMAT CHANGED - STOP"
-assert p.endswith("Two plus two")
-print("PROMPT OK")
-PY
+assert p.count('<think>') == 1 and '</think>' not in p, 'PROMPT FORMAT CHANGED - STOP'
+assert p.endswith('Two plus two')
+print('PROMPT OK')
+"
 ```
 
 Expected, exactly:
@@ -127,142 +107,134 @@ Expected, exactly:
 <|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nWhat is 2+2?<|im_end|>\n<|im_start|>assistant\n<think>\nLet me think. Two plus two
 ```
 
-If a second `<think>` or an empty `<think>\n\n</think>` block appears, **stop**. The
-chat template changed; every activation cached under it would sit at the wrong site.
-Fix the template/version, do not adjust the science.
+A second `<think>`, or an empty `<think>\n\n</think>` block, means **stop**: every
+activation cached under it would sit at the wrong site. Fix the version, never the
+science.
+
+(No GPU needed for this step — it runs on a login node.)
 
 ---
 
-## 5. Step A — real 32B smoke test
+## 3. Steps A/B/C — interactive session
 
-Downloads ~65 GB of weights (a few minutes on Colab's network; `hf_transfer` is
-already installed).
+Grab a card interactively so failures are immediate:
 
 ```bash
-colab exec -s r001 <<'PY'
-import subprocess, os
-env = {**os.environ, "HF_HUB_ENABLE_HF_TRANSFER": "1"}
-subprocess.run([ "python", "/content/nanda-app/src/extract_task1_activations.py",
-                 "--smoke", "--run-id", "r001_qwen32b_smoke"], env=env, check=True)
-PY
+salloc --gres=gpu:h100:1 --cpus-per-task=8 --mem=64G --time=2:00:00
+# or: --gres=gpu:a100l:1   (the 80 GB A100; plain a100 may be 40 GB -- do not use it)
+
+cd $SCRATCH/nanda-w27-app
+export HF_HOME=$SCRATCH/hf_cache
+nvidia-smi --query-gpu=name,memory.total --format=csv
 ```
 
-Must all hold:
+**A — real 32B smoke test:**
+
+```bash
+uv run python src/extract_task1_activations.py --smoke --run-id r001_qwen32b_smoke
+```
+
+All of these must hold:
 
 - pinned revision `9216db5…` loads;
 - `all 32.76B parameters CUDA-resident across ['cuda:0']`;
-- free memory after load printed (expect roughly 10–14 GB free on an 80 GB card);
+- free memory after load printed (expect ~10–14 GB free on an 80 GB card);
 - all ten inputs report `prompt_endswith_prefix=True`;
-- singleton vs padded: cosine ~1.0 at all five real depths;
-- `hooked final depth + norm == base model's own last hidden state`: `max_abs_diff` ~0
-  (a small non-zero value is fine in bf16 at this scale; the local run was exactly 0
-  only because the 0.6B model is tiny — anything under ~1e-2 passes the built-in check);
-- non-degeneracy passes;
-- no OOM.
+- singleton vs right-padded batch: cosine ~1.0 at all five real depths;
+- `hooked final depth + norm == base model's own last hidden state` passes.
+  The local 0.6B run gave `max_abs_diff=0` exactly; at 32B in bf16 a small non-zero
+  value is normal and anything under 1e-2 passes the built-in check. Do not treat
+  1e-3 as a failure;
+- non-degeneracy passes; no OOM.
 
-**If this fails, fix infrastructure only.** Do not touch the scientific design.
+**If A fails, fix infrastructure only.** Do not touch the scientific design.
 
----
-
-## 6. Steps B and C — memory stress
+**B and C — memory stress:**
 
 ```bash
-colab exec -s r001 <<'PY'
-import subprocess
-subprocess.run(["python", "/content/nanda-app/src/extract_task1_activations.py",
-                "--stress", "--run-id", "r001_qwen32b_stress",
-                "--token-budget", "16384", "--max-batch", "8"], check=True)
-PY
+uv run python src/extract_task1_activations.py --stress --run-id r001_qwen32b_stress \
+    --token-budget 16384 --max-batch 8
 ```
 
-- **B, representative batch** (~1.5–2.5k tokens at the configured budget): note peak
-  allocated/reserved and free-after. The script warns below 3 GB free.
-- **C, longest example** (~16.5k tokens, batch 1): the one that actually de-risks the
-  run, because the train tail has no counterpart in eval.
+- **B**, representative ~1.5–2.5k-token batch at the configured budget.
+- **C**, the longest selected example (~16.5k tokens) alone at batch 1. This is the
+  one that de-risks the run: the train split has a long tail that eval does not.
 
-Target **several GB free at peak**, not maximum utilization — one unlucky batch
-should not OOM a 40-minute run.
+Target **several GB free at peak**, not maximum utilization — one unlucky batch must
+not OOM a 40-minute run. The script warns below 3 GB free.
 
-If C OOMs despite `use_cache=False`: inspect the attention implementation
-(`attn_implementation="sdpa"` / flash-attention availability). **Do not truncate and
-do not drop the example** — that would break the "no truncation" decision and change
-what R001 measures.
-
-If either is tight, lower `--token-budget` (8192, then 4096). Never raise it above
-what you tested.
+If C OOMs despite `use_cache=False`, inspect the attention implementation
+(`sdpa` vs flash-attention). **Do not truncate and do not drop the example** — that
+would change what R001 measures. If either test is tight, lower `--token-budget`
+(8192, then 4096) and never raise it above what you tested.
 
 ---
 
-## 7. Step D — launch
+## 4. Step D — full extraction as a batch job
+
+`scripts/r001_extract.sbatch` is in the repo. Check the partition/gres line against
+what `sinfo` reported, then:
 
 ```bash
-colab exec -s r001 <<'PY'
-import subprocess, os
-env = {**os.environ, "HF_HUB_ENABLE_HF_TRANSFER": "1"}
-subprocess.run(["python", "/content/nanda-app/src/extract_task1_activations.py",
-                "--run-id", "r001_qwen32b",
-                "--token-budget", "16384",   # or whatever B/C established
-                "--max-batch", "8"], env=env, check=True)
-PY
+sbatch scripts/r001_extract.sbatch
+squeue -u $USER
+tail -f slurm-<jobid>.out
 ```
 
-4,216 rows (4,000 train + 72 val + 86 test + 58 ood_test). Expect roughly 30–50 min
-on an 80 GB card. Progress prints every 25 batches with an ETA.
+4,216 rows (4,000 train + 72 val + 86 test + 58 ood_test). Progress prints every 25
+batches with an ETA.
 
-**If the session dies**, the run is resumable: rerun the identical command and it
-reports `resuming: N rows already extracted` and continues. The frozen sample hash
-is recorded in `config.json`; confirm it still begins `d9eb713bcd366b6a`.
+**The run is resumable.** If the job is pre-empted or times out, resubmit the same
+script: it reports `resuming: N rows already extracted` and continues from the
+shards on disk. Confirm the frozen sample hash in `config.json` still begins
+`d9eb713bcd366b6a` — if it does not, the sample changed and the run is not R001.
 
 ---
 
-## 8. Fit the probes and bring the results home
+## 5. Fit the probes
+
+No GPU needed — run it on a login node or locally after copying the run directory back:
 
 ```bash
-colab exec -s r001 <<'PY'
-import subprocess
-subprocess.run(["python", "/content/nanda-app/src/fit_task1_probe.py",
-                "--run-id", "r001_qwen32b"], check=True)
-PY
-
-# retrieve everything (activations are only ~215 MB)
-colab exec -s r001 <<'PY'
-import shutil
-shutil.make_archive("/content/r001_qwen32b", "zip",
-                    "/content/nanda-app/artifacts/runs/r001_qwen32b")
-print("archived")
-PY
-colab download -s r001 /content/r001_qwen32b.zip ./r001_qwen32b.zip
-colab download -s r001 /content/nanda-app/artifacts/tables/reproduction_layer_auroc.csv \
-                       artifacts/tables/reproduction_layer_auroc.csv
-colab download -s r001 /content/nanda-app/artifacts/figures/reproduction_layer_auroc.png \
-                       artifacts/figures/reproduction_layer_auroc.png
-colab stop -s r001
+uv run python src/fit_task1_probe.py --run-id r001_qwen32b
 ```
 
-Unzip into `artifacts/runs/r001_qwen32b/`. The probe script can be re-run locally
-from the cached activations at any time — no GPU needed for any later analysis.
+Outputs: `artifacts/runs/r001_qwen32b/{metrics.json,probe_scores.csv}`,
+`artifacts/tables/reproduction_layer_auroc.csv`,
+`artifacts/figures/reproduction_layer_auroc.png`.
+
+To bring results home (the activations are only ~215 MB):
+
+```bash
+# from your laptop
+scp -r mila:$SCRATCH/nanda-w27-app/artifacts/runs/r001_qwen32b artifacts/runs/
+```
+
+All later analysis runs from these cached activations. **No further GPU time is
+needed for anything in Phase B or C.**
 
 ---
 
-## 9. After the numbers exist
+## 6. After the numbers exist
 
 1. Apply the `STATE.md` decision rule to **max OOD AUROC across the five depths**.
 2. Write the `RESULTS.md` R001 entry: question, per-hypothesis predictions, setup,
    the AUROC table with question-clustered CIs, interpretation, **evidence against
    that interpretation**, decision, artifact paths.
-3. Only then does the D007 embargo lift and the D008 paired analysis become available.
+3. Commit the run directory, the table, and the figure.
 
-Do not inspect the cached output features or the opposite-label pairs before that
-entry is written. Both were preregistered specifically so that they are tested after
-the reproduction, not alongside it.
+Only then does the D007 embargo lift (the cached `</think>` logit / margin / entropy
+features) and the D008 paired analysis become available. Both were preregistered so
+that they are tested *after* the reproduction, not alongside it.
 
 ---
 
-## Cost notes
+## Cluster hygiene
 
-- Compute units: an H100 hour is the dominant cost; budget ~1–1.5 h total including
-  the 65 GB model download.
-- The download does not persist across sessions. If you need a second run, either keep
-  the session alive (`colab` runs a keep-alive daemon) or accept re-downloading.
-- `colab drivemount` is available, but reading 65 GB of weights from Drive is usually
-  slower than re-downloading from HF — not recommended.
+- Keep `$HOME` clear of the model cache; use `$SCRATCH`.
+- `$SLURM_TMPDIR` is fast node-local disk but is wiped when the job ends — fine for
+  transient files, wrong for the HF cache or the run directory.
+- Write run artifacts under the repo checkout on `$SCRATCH`, not `$SLURM_TMPDIR`, so
+  a pre-empted job can resume.
+- If jobs are pre-empted often, request a shorter time limit and rely on resume
+  rather than asking for one long uninterruptible block.
