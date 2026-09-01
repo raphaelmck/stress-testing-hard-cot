@@ -1,0 +1,187 @@
+{
+  "run_id": "r005_length_balance_audit",
+  "no_model_fit": true,
+  "builder": {
+    "files": [
+      "cot-proxy-tasks/src/tasks/reasoning_termination/run_build_eval_v8.py",
+      "cot-proxy-tasks/src/tasks/reasoning_termination/run_build_math_val_v8.py",
+      "cot-proxy-tasks/src/tasks/reasoning_termination/run_build_ood_val_v8.py"
+    ],
+    "upstream_commit": "4482324",
+    "read_directly": true,
+    "global_length_filter": {
+      "LENGTH_MIN": 500,
+      "LENGTH_MAX": 3000,
+      "where": "step 1b, before any balancing"
+    },
+    "per_prompt_step": "step 4 takes min(n_yes, n_no) items per prompt, sorted by mean_yes_position (yes) and no_count (no) -- i.e. by label quality, NOT by token length",
+    "length_balancing": "step 5a-5e operates on 500-token buckets computed over the WHOLE selected set (_bucket_stats iterates the flat list, never grouping by prompt): 5a trims unpaired singles, 5b removes whole pairs, 5c adds minority singles, 5d stratified bucket trim, 5e global rebalance",
+    "within_prompt_length_matching": "absent -- no step in any of the three builders compares a yes item's token_count with a no item's token_count from the same prompt",
+    "builder_own_comment": "step 5d is commented 'stratified bucket trim -- remove majority-class excess per bucket to eliminate the systematic length skew (no->short, yes->long)', so the skew was known and was addressed globally"
+  },
+  "splits": {
+    "val": {
+      "n_rows": 72,
+      "n_questions": 30,
+      "n_questions_both_labels": 11,
+      "n_pairs": 97,
+      "pooled_length_auroc": 0.4498456790123456,
+      "macro_within_question_length_concordance": 0.6525974025974026,
+      "within_question_length_diff_mean": 225.70103092783506,
+      "within_question_length_diff_median": 168.0,
+      "global_buckets": {
+        "[500-1000)": {
+          "yes": 26,
+          "no": 24
+        },
+        "[1000-1500)": {
+          "yes": 5,
+          "no": 8
+        },
+        "[1500-2000)": {
+          "yes": 3,
+          "no": 2
+        },
+        "[2000-2500)": {
+          "yes": 1,
+          "no": 1
+        },
+        "[2500-3000)": {
+          "yes": 1,
+          "no": 1
+        }
+      },
+      "global_yes_mean_length": 925.3333333333334,
+      "global_no_mean_length": 953.8055555555555,
+      "activation_within_question_concordance": 0.9074675324675325,
+      "activation_source": "R004"
+    },
+    "test": {
+      "n_rows": 86,
+      "n_questions": 22,
+      "n_questions_both_labels": 17,
+      "n_pairs": 137,
+      "pooled_length_auroc": 0.49864791779340184,
+      "macro_within_question_length_concordance": 0.49412264905962383,
+      "within_question_length_diff_mean": 206.85401459854015,
+      "within_question_length_diff_median": 163.0,
+      "global_buckets": {
+        "[500-1000)": {
+          "yes": 22,
+          "no": 21
+        },
+        "[1000-1500)": {
+          "yes": 8,
+          "no": 9
+        },
+        "[1500-2000)": {
+          "yes": 5,
+          "no": 5
+        },
+        "[2000-2500)": {
+          "yes": 5,
+          "no": 6
+        },
+        "[2500-3000)": {
+          "yes": 3,
+          "no": 2
+        }
+      },
+      "global_yes_mean_length": 1251.953488372093,
+      "global_no_mean_length": 1238.0232558139535,
+      "activation_within_question_concordance": 0.8738745498199281,
+      "activation_source": "R004"
+    },
+    "ood_test": {
+      "n_rows": 58,
+      "n_questions": 32,
+      "n_questions_both_labels": 16,
+      "n_pairs": 31,
+      "pooled_length_auroc": 0.5873959571938169,
+      "macro_within_question_length_concordance": 0.9375,
+      "within_question_length_diff_mean": 432.4193548387097,
+      "within_question_length_diff_median": 426.0,
+      "global_buckets": {
+        "[500-1000)": {
+          "yes": 10,
+          "no": 12
+        },
+        "[1000-1500)": {
+          "yes": 11,
+          "no": 12
+        },
+        "[1500-2000)": {
+          "yes": 5,
+          "no": 3
+        },
+        "[2000-2500)": {
+          "yes": 3,
+          "no": 2
+        }
+      },
+      "global_yes_mean_length": 1259.0344827586207,
+      "global_no_mean_length": 1136.103448275862,
+      "activation_within_question_concordance": 0.9375,
+      "activation_source": "R003"
+    }
+  },
+  "toy_example": {
+    "unequal_counts": {
+      "rows": [
+        {
+          "question": "Q_long",
+          "y": 1,
+          "token_length": 3000
+        },
+        {
+          "question": "Q_long",
+          "y": 0,
+          "token_length": 2900
+        },
+        {
+          "question": "Q_long",
+          "y": 0,
+          "token_length": 2900
+        },
+        {
+          "question": "Q_long",
+          "y": 0,
+          "token_length": 2900
+        },
+        {
+          "question": "Q_short",
+          "y": 1,
+          "token_length": 1000
+        },
+        {
+          "question": "Q_short",
+          "y": 1,
+          "token_length": 1000
+        },
+        {
+          "question": "Q_short",
+          "y": 1,
+          "token_length": 1000
+        },
+        {
+          "question": "Q_short",
+          "y": 0,
+          "token_length": 900
+        }
+      ],
+      "pooled_length_auroc": 0.4375,
+      "within_question_concordance": {
+        "Q_long": 1.0,
+        "Q_short": 1.0
+      },
+      "macro_within_question_concordance": 1.0,
+      "note": "YES is the longer prefix in every question (conditional concordance 1.0) while pooled AUROC is below chance, because the long question contributes mostly NO rows and the short question mostly YES rows. A global balancing procedure sees the pooled view."
+    }
+  },
+  "conclusion_supported": "Global token-length balance is insufficient to rule out a question-conditional length shortcut. In the released ood_test math set, absolute length is weak pooled across questions but almost perfectly orders termination labels within questions.",
+  "conclusions_NOT_supported": [
+    "the activation probe is merely a length detector",
+    "the published probe result is invalid",
+    "length explains R001 generally"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "run_id": "r005_length_balance_audit",
+  "splits": [
+    "val",
+    "test",
+    "ood_test"
+  ],
+  "bucket_size": 500,
+  "inputs": "released rollout json (token_length, label) + the v8 builders",
+  "fits_nothing": true
+}

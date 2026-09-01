@@ -342,3 +342,41 @@ Revisit if:
 R004 shows the probe beats length within question on val/test. Then residualization
 against the output features (the previously planned experiment) becomes the way to
 separate H1 from H2, and it should be run against length as well.
+
+---
+
+## D012 — the OOD split's identification limit is a result; one experiment left
+
+Date: 2026-09-01
+
+Context:
+R005 read the three released v8 builders in the pinned upstream clone. They filter
+length globally to [500, 3000), balance classes per prompt by label quality, and
+then balance token length in **global 500-token buckets** with no step that matches
+YES/NO lengths within a prompt. In ood_test the mean within-question length gap is
++432 tokens -- smaller than the 500-token bucket width, so the balancing procedure
+cannot see it. Buckets are balanced; within-question length concordance is 0.938.
+On `test` the same conditional statistic is 0.494 (chance).
+
+Decision:
+1. Record as a result of the project that **the released ood_test split cannot
+   cleanly separate a termination-specific state from reasoning progress**. This is
+   an identification limit of the evaluation, not an uncertainty of ours, and it is
+   scoped to that split -- `test` shows no such conditional association.
+2. Claims stay narrow: "conditional length confound left by global balancing", never
+   "the benchmark is broken", "the probe is a length detector", or "the published
+   result is invalid". R004 contradicts the last two directly.
+3. Exactly **one** more experiment (R006): a representation-level control on `test`
+   asking whether the depth-40 score retains held-out signal after removing its
+   marginal linear associations with `think_logprob` and `token_length`. Then stop
+   and write up. No R007-R010.
+
+Reason:
+The remaining budget buys either one more control or a writeup, not both. The
+distinction worth publishing is between what this project can establish (in-domain,
+on `test`) and what the released evaluation does not let anyone establish
+(cross-domain independence from reasoning progress).
+
+Revisit if:
+R006 comes back ambiguous. Then the writeup reports R001-R005 and names R006 as the
+open question rather than running a sixth variant of it.

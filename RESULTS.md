@@ -497,3 +497,109 @@ does should activation-level residualization (the originally planned R005) be ru
 Artifacts:
 - `artifacts/runs/r004_length_control/` (config, metrics, metadata, pairs.csv)
 - `src/length_control.py`
+
+---
+
+## R005 — benchmark-construction audit: global vs question-conditional length balance
+
+Commit: entry written at the following commit; run produced under `da17c21` + `src/audit_length_balance.py`
+Run IDs: `r005_length_balance_audit` (nothing fit, no GPU, no new predictor)
+Date: 2026-09-01
+
+Question:
+The released evaluation builders balance token length. R003 found length ordering
+ood_test labels almost perfectly within question while being weak pooled. Can the
+balancing procedure actually leave that association, and does it in every split?
+
+Setup:
+- Builder logic read directly from the pinned upstream clone (`4482324`):
+  `src/tasks/reasoning_termination/run_build_eval_v8.py`, `…_math_val_v8.py`,
+  `…_ood_val_v8.py`. All three share the same structure.
+- Split statistics computed from the released rollout records' own
+  `token_length` and `label` fields only. No individual ood_test example inspected
+  (D011). Activation numbers are the frozen R003/R004 values, not recomputed.
+
+What the builders do (verified in the source, not inferred):
+1. **Global length filter** first: keep `500 <= token_count < 3000` (`LENGTH_MIN`,
+   `LENGTH_MAX`), before any balancing.
+2. **Per-prompt class balancing**: for each prompt take `min(n_yes, n_no)` of each,
+   sorted by `mean_yes_position` (yes) and `no_count` (no) — i.e. by *label
+   quality*, never by token length. Single-class prompts contribute one row.
+3. **Length balancing in global 500-token buckets** (steps 5a–5e): trim unpaired
+   singles, remove whole pairs, add minority singles, stratified per-bucket trim of
+   the majority class, then a global rebalance. `_bucket_stats` iterates the flat
+   selected list; **no step groups buckets by prompt**.
+4. **No within-prompt length matching exists** in any of the three builders — no
+   step compares a yes item's `token_count` against a no item's from the same prompt.
+5. The skew was known: step 5d's own comment is "stratified bucket trim — remove
+   majority-class excess per bucket to eliminate the systematic length skew
+   (no→short, yes→long)". The correction is applied globally.
+
+Results:
+
+| split | rows | questions (both labels) | pairs | pooled length AUROC | within-question length concordance | frozen depth-40 probe, same metric | mean / median within-question Δlen (YES−NO) |
+|---|---|---|---|---|---|---|---|
+| val | 72 | 30 (11) | 97 | 0.450 | 0.653 | 0.907 (R004) | +226 / +168 |
+| test | 86 | 22 (17) | 137 | 0.499 | **0.494** | 0.874 (R004) | +207 / +163 |
+| ood_test | 58 | 32 (16) | 31 | 0.587 | **0.938** | 0.938 (R003) | **+432 / +426** |
+
+Global 500-token buckets are close to balanced in every split (e.g. ood_test
+[500–1000) 10 yes / 12 no, [1000–1500) 11 / 12, [1500–2000) 5 / 3, [2000–2500) 3 / 2;
+global mean length yes 1259 vs no 1136). The balancing the builder enforces did
+what it says.
+
+Deterministic toy example (arithmetic only, not evidence): one long question
+contributing 1 YES at 3000 and 3 NOs at 2900, one short question contributing 3 YES
+at 1000 and 1 NO at 900 gives **pooled length AUROC 0.438 with within-question
+concordance 1.000** in both questions. Unequal per-question class counts across
+different length scales are sufficient; no adversarial construction is needed.
+
+Interpretation:
+Global bucket balance and a question-conditional length–label association are
+compatible, and in `ood_test` both hold at once: buckets are balanced, pooled AUROC
+is 0.587, and length still orders the labels within question at 0.938. The mechanism
+is legible in the numbers — the mean within-question gap in ood_test is **+432
+tokens, smaller than the 500-token bucket width**, so a procedure that balances in
+500-token buckets cannot see it by construction.
+
+The supportable claim is therefore narrow: *global token-length balance is not
+sufficient to rule out a question-conditional length shortcut, and in the released
+OOD math set absolute length is weak pooled across questions but almost perfectly
+orders termination labels within questions.* Consequently a high pooled OOD AUROC
+alone does not establish that a probe's signal transfers across domains independently
+of reasoning progress — the split is not constructed to separate those.
+
+Evidence against that interpretation, and what this does **not** show:
+- **The conditional confound is not a general property of the released splits.** On
+  `test` the within-question length concordance is 0.494 — chance — and on `val`
+  0.653. Only ood_test shows it. Any statement of the form "the benchmark is
+  length-confounded" is wrong as written; the correct scope is this split.
+- ood_test's estimate rests on **31 pairs from 16 questions**, most contributing one
+  YES and one NO. `test` has 137 pairs from 17 questions. The split showing the
+  confound is the split with the least data to establish it.
+- This says nothing about whether the probe uses the confound. R004 shows it does
+  not need to: on `test` the probe scores 0.874 within question where length is at
+  chance, and 0.914 on the 52 pairs where length points the wrong way.
+- Not concluded, and contradicted by R004: that the activation probe is a length
+  detector; that the published probe result is invalid; that length explains R001.
+- The audit reads the builder source, not the authors' full pipeline or any
+  unreleased step. "Conditional length confound left by global balancing" is the
+  accurate description; nothing here establishes a bug.
+- Pooled length AUROC differs across splits (0.450 / 0.499 / 0.587) and ood_test's
+  0.587 matches the earlier audit's 0.584 on a different length measure, so the
+  pooled quantity is stable; the conditional one is what varies.
+
+Decision:
+The identification limit is now itself a result: **the released OOD split cannot
+cleanly separate a termination-specific state from reasoning progress**, while the
+in-domain `test` split can and favours the probe carrying more than length or
+`</think>` propensity. One targeted experiment remains worth the budget —
+R006, a representation-level control on `test`: does the depth-40 score retain
+held-out predictive signal after removing its marginal linear associations with both
+`think_logprob` and `token_length`? Framed narrowly, not as "removing termination
+propensity". After that, stop experimenting and write up.
+
+Artifacts:
+- `artifacts/runs/r005_length_balance_audit/` (config, metrics, metadata)
+- `artifacts/figures/r005_length_balance.png`
+- `src/audit_length_balance.py`

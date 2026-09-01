@@ -1,0 +1,8 @@
+{
+  "run_id": "r005_length_balance_audit",
+  "commit": "da17c21-dirty",
+  "upstream_data_commit": "4482324b5",
+  "started_utc": "2026-09-01T21:54:01Z",
+  "host": "cn-h002.server.mila.quebec",
+  "command": "src/audit_length_balance.py --run-id r005_length_balance_audit"
+}

@@ -25,6 +25,10 @@ Last updated: 2026-09-01
 - **R004 complete** (no GPU): the length control on `test` (primary) and `val`.
   Length is at chance within question on test (0.494) while the probe is 0.874,
   and the probe is right on 92% of the pairs where length points the wrong way.
+- **R005 complete** (no GPU, nothing fit): benchmark-construction audit of the
+  released v8 builders. Global 500-token bucket balance coexists with a
+  within-question length-label association in ood_test (0.938) but not in test
+  (0.494). Recorded as D012.
 
 ## R001 headline
 
@@ -47,16 +51,19 @@ stops**. All pre-run gates passed (CUDA residency, activation site == model's ow
 
 ## Current beliefs
 
-Informal research beliefs, not statistical probabilities. R004 reversed most of the
-R003 update: the cheap length explanation failed on the split with power.
+Informal research beliefs, not statistical probabilities.
 
 - H0 immediate-output: 15% -- `think_logprob` collapses to 0.57-0.64 exactly where
   the probe stays above 0.9 (R004 B/C).
-- H1 broader termination-ready latent state: 45% (up from 35%)
-- H2 as *raw depth into the trace*: largely falsified on `test` (length 0.494).
-- H2 as *question-relative reasoning progress*: 40% -- untested, and now the main
-  competitor to H1. This is the version that could explain a linear probe that
-  generalises to unseen questions, which raw token count cannot.
+- H1 broader termination-ready latent state: 55%
+- H2 generic progress / other shortcut: 30% -- its cheapest form (raw length) is
+  falsified on `test`; a question-relative progress variable remains conceivable but
+  is not cleanly testable on the released splits.
+
+The more important update is not a probability: **the released ood_test split cannot
+discriminate H1 from H2**, because its within-question length-label association
+(0.938) survives the builders' global 500-token bucket balancing. That is an
+identification limit of the evaluation, recorded as D012.
 
 ## Where the evidence stands
 
@@ -65,39 +72,35 @@ R003 update: the cheap length explanation failed on the split with power.
 | the phenomenon reproduces (OOD AUROC 0.90+) | R001, solid |
 | reducible to immediate `</think>` propensity | R002+R003+R004, no |
 | more than between-question topic structure | R003, yes (15/16, p=0.0005) |
-| more than raw prefix length | R004 on `test`, yes (0.874 vs 0.494; 0.914 on 52 length-discordant pairs) |
-| more than question-relative reasoning progress | **untested -- this is R005** |
-| cross-domain claim survives the length control | untested; `ood_test` is closed |
+| more than raw prefix length, in-domain | R004 on `test`, yes (0.874 vs 0.494; 0.914 on 52 length-discordant pairs) |
+| more than reasoning progress, cross-domain | **not establishable on the released ood split** (R005 / D012) |
+| the probe is merely a length detector | contradicted by R004 |
 
-## R004 headline (primary split = `test`, 17 questions, 137 pairs)
+## R005 headline
 
-Within-question macro concordance: activation **0.874** [0.727, 0.977];
-`think_logprob` 0.794 [0.664, 0.908]; `token_length` **0.494** [0.321, 0.667].
-Paired delta activation − length [+0.137, +0.605], P(Δ>0) = 0.998.
-On the 52 length-discordant pairs (14 questions): activation 0.923 pooled / 0.914
-macro, above 0.5 on 12/14 questions; `think_logprob` 0.635 pooled.
-Near-matched |Δlen| ≤ 100: activation 0.983, think 0.567 (23 pairs, 10 questions).
+| split | pooled length AUROC | within-question length concordance | depth-40 probe, same metric | mean Δlen (YES−NO) |
+|---|---|---|---|---|
+| val | 0.450 | 0.653 | 0.907 | +226 |
+| test | 0.499 | **0.494** | 0.874 | +207 |
+| ood_test | 0.587 | **0.938** | 0.938 | **+432** |
 
-## Next experiment (exactly one)
+The builders filter length globally to [500, 3000), balance classes per prompt by
+label quality, then balance length in **global 500-token buckets**; no step matches
+YES/NO length within a prompt. ood_test's +432-token mean within-question gap is
+smaller than the 500-token bucket width, so global balancing cannot see it.
 
-**R005 — question-relative progress.** Build a progress variable that a global linear
-probe could plausibly track across unseen questions: prefix length as a fraction of
-its own rollout's total, and/or the prefix's rank among the prefixes of its question.
-Run exactly the R004 machinery on `test`: within-question concordance for progress,
-then the probe's concordance on the pairs where *progress* is discordant or matched.
-No GPU, no refitting.
+## Next experiment (exactly one, then stop -- D012)
 
-Decision rule:
+**R006 — representation-level control on `test`.** Does the depth-40 score retain
+held-out predictive signal after removing its marginal linear associations with
+`think_logprob` and `token_length`? Fit the nuisance relation without `test` labels,
+document the split that determines it, evaluate on `test`, and describe the result
+narrowly: it removes fitted marginal associations, not "termination propensity" and
+not length information from the representation. No GPU.
 
-- probe still wins on progress-discordant pairs -> the signal is not generic progress
-  either; H1 leads and activation-level residualization becomes R006.
-- probe collapses toward 0.5 there -> the honest headline is that a strong
-  cross-domain termination probe largely tracks question-relative reasoning progress
-  rather than a termination-specific state.
-- too few discordant pairs -> declare underpowered, do not infer either.
-
-Do not reopen `ood_test`. Do not fit new activation probes at other depths.
+Then stop experimenting and write up R001-R006.
 
 ## Current blocker
 
-None. R005 needs no GPU: frozen R001 probe scores and the released rollout fields.
+None. R006 needs no GPU: frozen R001 probe scores, cached D007 features, released
+`token_length`.
