@@ -61,6 +61,11 @@ the real extraction runs on a rented Linux GPU box. `uv.lock` resolves for both
 macOS/arm64 and Linux/x86_64, and on Linux the default PyPI torch wheel is CUDA-enabled,
 so the same `uv sync` works in both places.
 
+## Running R001 on a GPU
+
+`Qwen/Qwen3-32B` needs an 80 GB card. Full step-by-step runbook, including Colab CLI
+setup and the pre-launch verification gates: [`notes/gpu_runbook.md`](notes/gpu_runbook.md).
+
 ## Working with agents
 
 Give a bounded ticket, not "continue the project". Template in

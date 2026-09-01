@@ -76,17 +76,28 @@ def cluster_bootstrap_auroc(y, scores, groups, n_boot=N_BOOTSTRAP, seed=0):
     rng = np.random.default_rng(seed)
     uniq = np.unique(groups)
     idx_by_group = {g: np.flatnonzero(groups == g) for g in uniq}
-    vals = []
+    vals, discarded = [], 0
     for _ in range(n_boot):
         drawn = rng.choice(uniq, size=len(uniq), replace=True)
         idx = np.concatenate([idx_by_group[g] for g in drawn])
         yy = y[idx]
         if yy.min() == yy.max():
+            # A single-label replicate has no defined AUROC. Discard it --
+            # never coerce it to 0.5, 0 or 1, which would bias the interval.
+            # With only 32 OOD questions these are not vanishingly rare.
+            discarded += 1
             continue
         vals.append(roc_auc_score(yy, scores[idx]))
-    if not vals:
-        return (float("nan"), float("nan"), 0)
+
+    if len(vals) < n_boot // 2:
+        raise RuntimeError(
+            f"only {len(vals)}/{n_boot} bootstrap replicates were valid "
+            f"({discarded} were single-label); the CI would be unreliable. "
+            f"Check the label balance across the {len(uniq)} question clusters.")
+    if discarded:
+        print(f"    (discarded {discarded}/{n_boot} single-label replicates)")
     lo, hi = np.percentile(vals, [2.5, 97.5])
+    assert np.isfinite(lo) and np.isfinite(hi), "non-finite bootstrap percentile"
     return (float(lo), float(hi), len(vals))
 
 

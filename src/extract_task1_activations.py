@@ -367,6 +367,69 @@ def run_smoke(base, tokenizer, tap, norm, head, rows, device, report):
     return worst_cos, worst_abs
 
 
+def run_stress(base, tokenizer, tap, norm, head, rows, device, report,
+               token_budget, max_batch):
+    """Memory/throughput probes before committing to the full extraction.
+
+    Two tests, in increasing order of importance:
+      B. a representative ~1.5-2.5k-token batch at the configured budget;
+      C. the single longest selected example alone at batch size 1.
+
+    (C) is the one that de-risks the run: the train split has a long tail that
+    the eval splits do not (up to ~16.5k tokens vs ~2.9k). If (C) OOMs, inspect
+    the attention implementation -- do NOT truncate, and do not drop the example.
+    """
+    def peak():
+        if device != "cuda":
+            return None
+        return (torch.cuda.max_memory_allocated() / 1e9,
+                torch.cuda.max_memory_reserved() / 1e9,
+                torch.cuda.mem_get_info()[0] / 1e9)
+
+    def run_and_report(name, batch):
+        if device == "cuda":
+            torch.cuda.reset_peak_memory_stats()
+            torch.cuda.empty_cache()
+        toks = [r["n_tokens"] for r in batch]
+        t0 = time.time()
+        acts, feats = run_rows(base, tap, norm, head, batch, tokenizer, device)
+        dt = time.time() - t0
+        padded = len(batch) * max(toks)
+        report(f"  {name}: batch={len(batch)} tokens={min(toks)}-{max(toks)} "
+               f"padded_total={padded} time={dt:.2f}s")
+        pk = peak()
+        if pk:
+            report(f"    peak allocated={pk[0]:.1f} GB  reserved={pk[1]:.1f} GB  "
+                   f"free after={pk[2]:.1f} GB")
+            if pk[2] < 3.0:
+                report("    WARNING: under 3 GB free at peak -- lower --token-budget")
+        report(f"    finite={bool(torch.isfinite(acts.float()).all())} "
+               f"shape={tuple(acts.shape)}")
+        return dt
+
+    report("\n=== STRESS TEST ===")
+    report(f"token_budget={token_budget} max_batch={max_batch}")
+
+    mid = sorted((r for r in rows if 1500 <= r["n_tokens"] <= 2500),
+                 key=lambda r: r["filename"])
+    if mid:
+        batches = make_batches(mid, token_budget, max_batch)
+        dt = run_and_report("B representative", batches[0])
+        n_rows, n_batches = len(rows), len(make_batches(rows, token_budget, max_batch))
+        report(f"    extrapolated: {n_batches} batches for {n_rows} rows "
+               f"~= {dt*n_batches/60:.0f} min at this batch's rate (crude)")
+    else:
+        report("  B representative: no rows in the 1.5-2.5k token band")
+
+    longest = max(rows, key=lambda r: r["n_tokens"])
+    report(f"  C longest example: {longest['split']}/{longest['filename']}")
+    run_and_report("C longest", [longest])
+
+    report("\n=== STRESS TEST PASSED ===")
+    report("If free memory at peak was tight, rerun the full extraction with a "
+           "LOWER --token-budget. Never raise it above what was tested here.")
+
+
 def run_rows(base, tap, norm, head, rows, tokenizer, device, **kw):
     enc = tokenizer.pad({"input_ids": [r["input_ids"] for r in rows]},
                         padding=True, return_tensors="pt")
@@ -385,6 +448,9 @@ def main() -> int:
     ap.add_argument("--run-id", required=True)
     ap.add_argument("--smoke", action="store_true",
                     help="run the 10-example smoke test and stop")
+    ap.add_argument("--stress", action="store_true",
+                    help="run the representative-batch and longest-example "
+                         "memory tests and stop (GPU steps B and C)")
     ap.add_argument("--splits", nargs="+", default=T.SPLITS)
     ap.add_argument("--model", default=T.MODEL_ID)
     ap.add_argument("--revision", default=T.MODEL_REVISION)
@@ -431,6 +497,8 @@ def main() -> int:
     rows = build_worklist(args.splits, tokenizer, build_prompt,
                           cfg.max_position_embeddings,
                           smoke_n=10 if args.smoke else 0)
+    if args.stress and args.smoke:
+        raise SystemExit("--stress and --smoke are mutually exclusive")
     report(f"work list: {len(rows)} rows tokenised in {time.time()-t0:.1f}s; "
            f"max tokens={max(r['n_tokens'] for r in rows)}")
 
@@ -505,6 +573,11 @@ def main() -> int:
     tap.think_id = tokenizer.convert_tokens_to_ids(THINK_CLOSE)
     report(f"{THINK_CLOSE} token id={tap.think_id} "
            f"(single token: {len(tokenizer.encode(THINK_CLOSE, add_special_tokens=False))==1})")
+
+    if args.stress:
+        run_stress(base, tokenizer, tap, norm, head, rows, device, report,
+                   args.token_budget, args.max_batch)
+        return 0
 
     if args.smoke:
         cos, mad = run_smoke(base, tokenizer, tap, norm, head, rows, device, report)
