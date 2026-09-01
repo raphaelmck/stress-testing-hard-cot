@@ -71,3 +71,156 @@ reproducibility requirement. Writing into the clone would make provenance unreco
 Revisit if:
 Upstream publishes a revision that changes Task 1 labels — then pin the new hash in a new
 DECISIONS entry and mark affected results as superseded, not invalidated.
+
+---
+
+## D004 — uv + Python 3.12 lockfile; local Mac is not an inference target
+
+Date: 2026-08-31
+
+Context:
+The repo had no environment. Local machine is an M5 Pro Mac, 48 GB unified memory, no CUDA;
+system Python is 3.14 with no relevant packages. Upstream `cot-proxy-tasks` ships **no**
+dependency pins of any kind, so its environment cannot be matched by version.
+
+Decision:
+- `uv` with `pyproject.toml` + committed `uv.lock`; Python pinned to 3.12 in `.python-version`.
+- One dependency set for both platforms; `[tool.uv] environments` locks resolution for
+  macOS/arm64 and Linux/x86_64 so the same lockfile is valid on a rented GPU box.
+- The local Mac is for analysis, probe fitting, and pipeline validation only. Qwen3-32B
+  (~64 GB bf16) does not fit in 48 GB, and quantizing to fit would change the activations
+  under study, so no real activation run happens locally.
+- Model pinned to `Qwen/Qwen3-32B` revision `9216db5781bf21249d130ec9da846c4624c16137`.
+
+Reason:
+3.12 rather than the system 3.14 because the GPU-side ecosystem (transformers, accelerate,
+and standard CUDA images) is best-supported there. A committed lockfile is what makes a
+`RESULTS.md` entry's commit hash actually mean something.
+
+Verified:
+Under the locked env (transformers 5.16.1, torch 2.13.0), the upstream helper
+`cot-proxy-tasks/src/utils/chat_template.py::build_thinking_prompt` produces
+
+    <|im_start|>system\nYou are a helpful assistant.<|im_end|>\n
+    <|im_start|>user\n{prompt_text}<|im_end|>\n
+    <|im_start|>assistant\n<think>\n{cot_prefix}
+
+with exactly one `<think>` and no auto-inserted empty think block, and the final token of
+the string is the final token of `cot_prefix`. This was the main version risk: some Qwen3
+chat-template revisions emit `<think>\n\n</think>\n\n` under `add_generation_prompt=True`,
+which would silently double the tag and move the activation site.
+
+Revisit if:
+transformers, the pinned model revision, or the upstream helper changes. Re-run the prompt
+assertion before trusting any activation cached under the new versions.
+
+---
+
+## D005 — Evaluation hygiene, frozen before any activation is extracted
+
+Date: 2026-08-31
+
+Decision:
+
+```text
+Primary metric: AUROC.
+Training:                      train split only.
+Hyperparameter/layer choice:   val only.
+ID check:                      test.
+Final cross-domain check:      ood_test.
+```
+
+Never tune `C`, layer choice, preprocessing, or feature design on `ood_test`.
+
+Predeclared now, not after seeing results:
+- transformer depths **8, 24, 40, 56, 64** (zero-indexed `model.layers` 7, 23, 39, 55, 63);
+- regularization grid **C in {0.01, 0.1, 1, 10}**, selected on val AUROC.
+
+OOD performance may be reported for all five *predeclared* layers, but the experiment must
+not be modified based on which OOD layer looks best. Do not repeatedly inspect OOD AUROC
+during development.
+
+Reason:
+`ood_test` is 58 rows. It cannot survive repeated inspection, and it is the only clean-label
+split (D-audit: positives 45–50/50 vs 40–50/50 in val/test). Predeclaring the layer set and
+grid is what makes the reproduction a test rather than a search.
+
+Revisit if:
+Never within this sprint. A layer outside the predeclared five requires a new DECISIONS entry
+written *before* the run.
+
+---
+
+## D006 — Uncertainty on ood_test is bootstrapped clustered by question_id
+
+Date: 2026-08-31
+
+Context:
+`ood_test` is 58 records from only **32 questions**, and 16 of those 32 carry both a positive
+and a negative prefix. Rows are not independent.
+
+Decision:
+All confidence intervals on `ood_test` (and `val`/`test`) come from a bootstrap that resamples
+**question_id clusters**, not individual rows. Report the CI alongside every AUROC from the
+first run onward.
+
+Reason:
+Row-level bootstrap would understate the interval by treating correlated prefixes from one
+question as independent evidence. With 32 effective units, honest intervals are wide, and
+a difference of <~0.05 AUROC between layers should not be interpreted.
+
+Revisit if:
+Never. Retrofitting CIs after seeing point estimates is exactly the failure this prevents.
+
+---
+
+## D007 — Cache stop-token statistics during the reproduction pass; embargo their analysis
+
+Date: 2026-08-31
+
+Context:
+Testing H0 needs last-token output-distribution features. Obtaining them later would mean a
+second full Qwen3-32B pass over every sample — a large fraction of a 20-hour budget.
+
+Decision:
+During the reproduction forward pass, also cache at the last real prefix token:
+`</think>` logit, `</think>` log-probability, `</think>` logit margin vs the highest
+non-`</think>` token, next-token entropy, and top-1 token id + log-probability.
+
+**Embargo:** these values must not be used in probe selection, plotted against labels, or
+inspected in any way until the activation reproduction is frozen and its `RESULTS.md` entry
+is written.
+
+Reason:
+The scientific separation that matters is between *seeing the baseline result* and *choosing
+the activation experiment* — not between physically executing two forward passes. Caching is
+free; peeking is not.
+
+Revisit if:
+Never. The embargo lifts by its own terms once the reproduction entry is committed.
+
+---
+
+## D008 — Preregistered control: answer obtained =/= termination imminent
+
+Date: 2026-08-31
+
+Context:
+The manual audit found evaluation negatives that have already solved the problem correctly
+(`tetrahedron_volume` 18*sqrt(2), `lcm_three` 180, `euler_phi_30` 8, `partition_ordered` 64)
+with 0/50 continuations terminating soon, while positives often contain answer + verification.
+16 of 32 `ood_test` questions carry both labels, enabling a within-question paired analysis at
+no extra compute.
+
+Decision:
+Register this now as a planned falsification/control, *before* any activation result exists.
+Do **not** analyse these pairs until the reproduction is complete and frozen.
+
+Reason:
+This is the specific test that speaks to the Hard-CoT / causal-analysis reconciliation rather
+than being a generic probe result. Its value depends entirely on having been declared before
+the data was seen. Preserve the ordering: reproduce first, explain second.
+
+Revisit if:
+The reproduction fails (max OOD AUROC < 0.75), in which case there is no phenomenon to explain
+and this control is moot until the pipeline is fixed.

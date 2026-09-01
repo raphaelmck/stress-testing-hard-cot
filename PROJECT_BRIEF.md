@@ -26,6 +26,11 @@ This creates the central puzzle:
 
 ## Primary research question
 
+**What information makes Qwen3-32B's imminent reasoning termination linearly predictable
+across domains?**
+
+Deliberately not "find the termination direction" or "find the termination circuit".
+
 What information is a successful OOD termination probe actually decoding?
 
 In particular, distinguish among:
@@ -35,6 +40,11 @@ In particular, distinguish among:
 3. dataset or proxy-label structure correlated with being near the end of reasoning.
 
 ## Hypotheses
+
+**FROZEN 2026-08-31**, before any activation was extracted. H0/H1/H2 below are not to be
+edited, reworded, or added to after seeing probe results; a new hypothesis gets a new label
+and a `DECISIONS.md` entry recording when and why it was introduced.
+
 
 ### H0 — output-proximal explanation
 
@@ -72,13 +82,34 @@ The released training set uses cheap distance-based proxy labels:
 * positive examples are prefixes approximately 25, 35, 45, or 55 **words** from the end of an existing CoT;
 * negative examples are prefixes 300+ words from the end.
 
-The stronger evaluation datasets use behavioral labels obtained by resampling continuations.
+Empirically verified in the released files (`src/inspect_task1.py`, 2026-08-31): train
+positives are `distance_from_end` in {25, 35, 45, 55} and negatives form a ladder from 300 to
+11,300 words in steps of 200 — "300+" is correct but hides that negatives span the full depth
+of a trace. `total_words - prefix_words == distance_from_end` holds for all 46,160 rows.
 
-In the v8 evaluation construction:
+The stronger evaluation datasets use behavioral labels obtained by resampling continuations:
+50 per prefix, with positives requiring `</think>` soon and negatives requiring it late or
+never.
 
-* 50 continuations are sampled per prefix;
-* positive examples require at least 45/50 continuations to emit `</think>` at approximately token positions 20–60;
-* negative examples require at least 45/50 continuations to emit `</think>` after 200 tokens or not at all.
+**Do not describe all released evaluation splits as using a 45/50 threshold.** The observed
+empirical thresholds differ by split:
+
+| split | positives | negatives |
+|---|---|---|
+| val | `yes_count` 40–50 | `no_count` 40–50 |
+| test | `yes_count` 40–50 | `no_count` 40–50 |
+| ood_test | `yes_count` 45–50 | `no_count` 46–50 |
+
+The current v8 builder scripts in the upstream repository do use 45/50, but the released
+`val`/`test` splits were exported from distinct source datasets rather than regenerated under
+one rule, so the repository carries genuine provenance/version complexity. Document the
+observed thresholds; do not "fix" the released data.
+
+Also note: `yes_count + no_count < total_resamples` in 139/216 evaluation records, by 1–10
+continuations. The two counts are counts of continuations meeting *distinct* criteria
+(terminate soon / terminate late-or-never) with an unclassified band between them — they are
+not a binary partition of the 50 samples. `yes_count/50` is therefore **not** a calibrated
+termination probability, and any continuous-target analysis must account for this.
 
 Therefore, do not casually describe training labels as equivalent to the evaluation target.
 

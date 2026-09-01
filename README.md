@@ -37,12 +37,29 @@ cot-proxy-tasks/        upstream clone @ 4482324 — gitignored, read-only
 
 ## Setup
 
+Environment is managed with [uv](https://docs.astral.sh/uv/); Python is pinned to 3.12
+in `.python-version` and dependencies are locked in `uv.lock`.
+
+```bash
+uv sync                       # creates .venv from the lockfile
+uv run python src/inspect_task1.py
+```
+
 The upstream data clone is not tracked by this repo. To recreate it:
 
 ```bash
 git clone https://github.com/Centrattic/cot-proxy-tasks.git
 git -C cot-proxy-tasks checkout 4482324b5e4a6277fa3bd544785cbd9875e11694
 ```
+
+### Compute
+
+`Qwen/Qwen3-32B` is 32.8B parameters, ~64 GB in bf16. It does **not** fit on the local
+48 GB Mac, and quantizing to fit would alter the activations under study. Local work is
+limited to analysis, probe fitting, and pipeline validation against a small Qwen3 model;
+the real extraction runs on a rented Linux GPU box. `uv.lock` resolves for both
+macOS/arm64 and Linux/x86_64, and on Linux the default PyPI torch wheel is CUDA-enabled,
+so the same `uv sync` works in both places.
 
 ## Working with agents
 

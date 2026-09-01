@@ -1,0 +1,29 @@
+[project]
+name = "cot-termination-probes"
+version = "0.1.0"
+description = "What information makes Qwen3-32B reasoning termination linearly predictable across domains?"
+requires-python = ">=3.12,<3.13"
+
+dependencies = [
+    # analysis / probes -- runs anywhere, including the local Mac
+    "numpy>=2.1",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.9",
+    # model access -- on Linux the default PyPI torch wheel is CUDA-enabled,
+    # on macOS it is the MPS/CPU build, so one dependency set covers both
+    "torch>=2.6",
+    "transformers>=4.51",
+    "accelerate>=1.0",
+    "huggingface-hub>=0.26",
+    "safetensors>=0.4",
+    "tqdm>=4.66",
+]
+
+[tool.uv]
+# Keep resolution identical on the Mac and on a rented Linux GPU box, so
+# uv.lock is meaningful on both.
+environments = [
+    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
