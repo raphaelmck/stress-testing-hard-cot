@@ -1,0 +1,74 @@
+model=Qwen/Qwen3-32B revision=9216db5781bf21249d130ec9da846c4624c16137
+layers=64 hidden=5120 context_limit=40960
+depths=[8, 24, 40, 56, 64] -> zero-indexed blocks=[7, 23, 39, 55, 63]
+work list: 10 rows tokenised in 53.3s; max tokens=3050
+frozen sample manifest: sample_manifest.csv  sha256=d9eb713bcd366b6a
+device=cuda dtype=bfloat16
+  gpu0: NVIDIA A100-SXM4-80GB 85.1 GB
+  free before load: 84.6 GB / 85.1 GB
+  all 32.76B parameters CUDA-resident across ['cuda:0']
+  free after load:  19.1 GB / 85.1 GB
+</think> token id=151668 (single token: True)
+
+=== SMOKE TEST ===
+ # split     label  tokens  filename
+ 0 train     yes     1084  bb_causal_judgement_013_rollout_022_prefix_0.json
+ 1 train     yes      645  bb_causal_judgement_024_rollout_001_prefix_0.json
+ 2 train     no       630  bb_causal_judgement_013_rollout_007_prefix_0.json
+ 3 train     no       609  bb_causal_judgement_013_rollout_023_prefix_1.json
+ 4 val       yes      747  bb_date_understanding_v_000_rollout_098_prefix_1.json
+ 5 val       no       940  bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json
+ 6 test      yes     3050  bb_date_understanding_t_000_rollout_045_prefix_5.json
+ 7 test      no       961  bb_date_understanding_t_000_rollout_001_prefix_0.json
+ 8 ood_test  yes     2356  binary_no_consec_rollout_029_prefix_2.json
+ 9 ood_test  no      1095  balance_coins_rollout_028_prefix_0.json
+
+-- input reconstruction --
+  bb_causal_judgement_013_rollout_022_prefix_0.json    prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  bb_causal_judgement_024_rollout_001_prefix_0.json    prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  bb_causal_judgement_013_rollout_007_prefix_0.json    prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  bb_causal_judgement_013_rollout_023_prefix_1.json    prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  bb_date_understanding_v_000_rollout_098_prefix_1.jso prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  bb_logical_deduction_five_objects_v_000_rollout_134_ prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  bb_date_understanding_t_000_rollout_045_prefix_5.jso prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  bb_date_understanding_t_000_rollout_001_prefix_0.jso prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  binary_no_consec_rollout_029_prefix_2.json           prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  balance_coins_rollout_028_prefix_0.json              prompt_endswith_prefix=True decoded_endswith_prefix_tail=True
+  qid preserved on all rows: True
+
+-- singleton vs right-padded batch, all five depths --
+  bb_causal_judgement_013_rollout_023_prefix_1 (609 tok) padded to 3050
+      depth  8: cosine=0.999989  max_abs_diff=6.250e-02
+      depth 24: cosine=0.999956  max_abs_diff=5.000e-01
+      depth 40: cosine=0.999949  max_abs_diff=2.500e-01
+      depth 56: cosine=0.999938  max_abs_diff=2.000e+00
+      depth 64: cosine=0.999947  max_abs_diff=8.000e+00
+  bb_causal_judgement_013_rollout_007_prefix_0 (630 tok) padded to 2356
+      depth  8: cosine=0.999984  max_abs_diff=2.500e-01
+      depth 24: cosine=0.999956  max_abs_diff=5.000e-01
+      depth 40: cosine=0.999945  max_abs_diff=1.000e+00
+      depth 56: cosine=0.999948  max_abs_diff=1.000e+00
+      depth 64: cosine=0.999917  max_abs_diff=8.000e+00
+  worst cosine=0.999917  worst max_abs_diff=8.000e+00
+
+-- no full-sequence logits are materialised --
+  base forward returns last_hidden_state (10, 3050, 5120) (hidden=5120, vocab=151936)
+  forward output exposes .logits: False
+  only vocab-sized tensor built anywhere: [batch, vocab] = (10, 151936) from the last real token
+
+-- hooked final depth + norm == base model's own last hidden state --
+  max_abs_diff=0.000e+00  min_cosine=1.000000
+
+-- non-degeneracy (guards against a stale/shared hook tensor) --
+  distinct examples differ: min max_abs_diff over pairs = 1.000e+02
+  distinct depths differ:   min max_abs_diff over pairs = 5.450e+01
+
+-- shapes / finiteness --
+  activations (10, 5, 5120) (rows, depths, hidden) dtype=torch.float16
+  per-depth slice is [batch, hidden]: (10, 5120)
+  all activations finite: True
+  all output features finite: True
+  output features cached but NOT analysed (D007 embargo)
+
+=== SMOKE TEST PASSED ===
+Do NOT launch the full extraction until this output is reviewed.

@@ -1,0 +1,25 @@
+model=Qwen/Qwen3-32B revision=9216db5781bf21249d130ec9da846c4624c16137
+layers=64 hidden=5120 context_limit=40960
+depths=[8, 24, 40, 56, 64] -> zero-indexed blocks=[7, 23, 39, 55, 63]
+work list: 4216 rows tokenised in 40.8s; max tokens=16652
+frozen sample manifest: sample_manifest.csv  sha256=c261306dde08c8b9
+device=cuda dtype=bfloat16
+  gpu0: NVIDIA A100-SXM4-80GB 85.1 GB
+  free before load: 84.6 GB / 85.1 GB
+  all 32.76B parameters CUDA-resident across ['cuda:0']
+  free after load:  19.1 GB / 85.1 GB
+</think> token id=151668 (single token: True)
+
+=== STRESS TEST ===
+token_budget=16384 max_batch=8
+  B representative: batch=8 tokens=1501-1509 padded_total=12072 time=5.99s
+    peak allocated=67.9 GB  reserved=68.8 GB  free after=15.7 GB
+    finite=True shape=(8, 5, 5120)
+    extrapolated: 886 batches for 4216 rows ~= 88 min at this batch's rate (crude)
+  C longest example: train/gpqa_chem_083_rollout_026_prefix_0.json
+  C longest: batch=1 tokens=16652-16652 padded_total=16652 time=6.16s
+    peak allocated=68.8 GB  reserved=70.1 GB  free after=14.4 GB
+    finite=True shape=(1, 5, 5120)
+
+=== STRESS TEST PASSED ===
+If free memory at peak was tight, rerun the full extraction with a LOWER --token-budget. Never raise it above what was tested here.

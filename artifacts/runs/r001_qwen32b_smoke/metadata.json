@@ -1,0 +1,9 @@
+{
+  "run_id": "r001_qwen32b_smoke",
+  "commit": "c1e8382",
+  "started_utc": "2026-09-01T19:22:59+00:00",
+  "host": "cn-g008.server.mila.quebec",
+  "platform": "Linux-5.15.0-181-generic-x86_64-with-glibc2.35",
+  "command": "src/extract_task1_activations.py --smoke --run-id r001_qwen32b_smoke",
+  "torch": "2.13.0+cu130"
+}

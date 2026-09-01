@@ -1,0 +1,11 @@
+split,filename,question_id,rollout_idx,prefix_idx,label,family,n_words,n_tokens
+train,bb_causal_judgement_013_rollout_022_prefix_0.json,bb_causal_judgement_013,22,0,yes,big_bench,708,1084
+train,bb_causal_judgement_024_rollout_001_prefix_0.json,bb_causal_judgement_024,1,0,yes,big_bench,353,645
+train,bb_causal_judgement_013_rollout_007_prefix_0.json,bb_causal_judgement_013,7,0,no,big_bench,296,630
+train,bb_causal_judgement_013_rollout_023_prefix_1.json,bb_causal_judgement_013,23,1,no,big_bench,294,609
+val,bb_date_understanding_v_000_rollout_098_prefix_1.json,bb_date_understanding_v_000,98,1,yes,eval,305,747
+val,bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json,bb_logical_deduction_five_objects_v_000,134,0,no,eval,577,940
+test,bb_date_understanding_t_000_rollout_045_prefix_5.json,bb_date_understanding_t_000,45,5,yes,eval,1744,3050
+test,bb_date_understanding_t_000_rollout_001_prefix_0.json,bb_date_understanding_t_000,1,0,no,eval,499,961
+ood_test,binary_no_consec_rollout_029_prefix_2.json,binary_no_consec,29,2,yes,eval,1198,2356
+ood_test,balance_coins_rollout_028_prefix_0.json,balance_coins,28,0,no,eval,729,1095

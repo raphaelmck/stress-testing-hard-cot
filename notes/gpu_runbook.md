@@ -119,9 +119,13 @@ science.
 
 Grab a card interactively so failures are immediate:
 
+Verified on the Mila cluster 2026-09-01 with `sinfo`: `a100l` (80 GB A100) is
+available in `main`, `unkillable` and `short-unkillable`; `h100` exists **only** in
+`short-unkillable` (cn-n[001-002]). Plain `a100` (cn-d001, cn-k[001-004]) is the
+40 GB variant and must not be used. So the default request is `main` + `a100l`.
+
 ```bash
-salloc --gres=gpu:h100:1 --cpus-per-task=8 --mem=64G --time=2:00:00
-# or: --gres=gpu:a100l:1   (the 80 GB A100; plain a100 may be 40 GB -- do not use it)
+salloc --partition=main --gres=gpu:a100l:1 --cpus-per-task=8 --mem=64G --time=2:00:00
 
 cd $SCRATCH/nanda-w27-app
 export HF_HOME=$SCRATCH/hf_cache
@@ -133,6 +137,9 @@ nvidia-smi --query-gpu=name,memory.total --format=csv
 ```bash
 uv run python src/extract_task1_activations.py --smoke --run-id r001_qwen32b_smoke
 ```
+
+Non-interactively, A and B/C are the single batch job `scripts/r001_gpu_checks.sbatch`
+(`set -e`, so B/C never run if A fails).
 
 All of these must hold:
 

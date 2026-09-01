@@ -1,8 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=r001_extract
-#SBATCH --gres=gpu:h100:1
+#SBATCH --partition=main
+#SBATCH --gres=gpu:a100l:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=48G
 #SBATCH --time=3:00:00
 #SBATCH --output=slurm-%j.out
 #SBATCH --error=slurm-%j.out
