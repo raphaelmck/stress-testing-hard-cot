@@ -1,0 +1,20 @@
+{
+  "run_id": "r004_length_control",
+  "source_run": "r001_qwen32b",
+  "depth": 40,
+  "depth_note": "val-selected depth (D010)",
+  "primary_split": "test",
+  "supplementary_split": "val",
+  "closed_splits": [
+    "ood_test"
+  ],
+  "match_thresholds": [
+    100.0,
+    250.0
+  ],
+  "thresholds_frozen": "before the run; no threshold search",
+  "refit": "none for A-C; D fits one 2-parameter line on val only",
+  "n_bootstrap": 2000,
+  "seed": 0,
+  "source_sample_sha256": "c261306dde08c8b9208f421fc898b1e9e6c11b227d2e6db2bbb399ab295b669e"
+}

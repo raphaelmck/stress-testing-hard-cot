@@ -20,6 +20,11 @@ Last updated: 2026-09-01
 - **R003 complete** (no GPU): the preregistered D008 within-question ood control.
   The probe separates 15/16 questions -- and so does raw `token_length`, exactly.
   Recorded as D011; `ood_test` is now closed to further inspection.
+  R003 controls question/prompt/topic, NOT the reasoning trace (paired rows come
+  from different rollouts). See the R003 wording correction in `RESULTS.md`.
+- **R004 complete** (no GPU): the length control on `test` (primary) and `val`.
+  Length is at chance within question on test (0.494) while the probe is 0.874,
+  and the probe is right on 92% of the pairs where length points the wrong way.
 
 ## R001 headline
 
@@ -42,58 +47,57 @@ stops**. All pre-run gates passed (CUDA residency, activation site == model's ow
 
 ## Current beliefs
 
-Informal research beliefs, not statistical probabilities. R003 moved these sharply.
+Informal research beliefs, not statistical probabilities. R004 reversed most of the
+R003 update: the cheap length explanation failed on the split with power.
 
-- H0 immediate-output: 20% (down from 45%) -- output features are at chance on the
-  training distribution, and within question the probe beats `think_logprob`.
-- H1 broader termination-ready latent state: 35% (down from 40%)
-- H2 generic depth-into-trace / proxy structure: 45% (up from 15%) -- within
-  question, prefix length alone matches the probe.
+- H0 immediate-output: 15% -- `think_logprob` collapses to 0.57-0.64 exactly where
+  the probe stays above 0.9 (R004 B/C).
+- H1 broader termination-ready latent state: 45% (up from 35%)
+- H2 as *raw depth into the trace*: largely falsified on `test` (length 0.494).
+- H2 as *question-relative reasoning progress*: 40% -- untested, and now the main
+  competitor to H1. This is the version that could explain a linear probe that
+  generalises to unseen questions, which raw token count cannot.
 
 ## Where the evidence stands
 
 | claim | status |
 |---|---|
 | the phenomenon reproduces (OOD AUROC 0.90+) | R001, solid |
-| it is reducible to immediate `</think>` propensity | R002+R003, largely no |
-| it is more than between-question topic structure | R003, yes (15/16, p=0.0005) |
-| it is more than prefix length | **untested; R003 found no advantage over length** |
+| reducible to immediate `</think>` propensity | R002+R003+R004, no |
+| more than between-question topic structure | R003, yes (15/16, p=0.0005) |
+| more than raw prefix length | R004 on `test`, yes (0.874 vs 0.494; 0.914 on 52 length-discordant pairs) |
+| more than question-relative reasoning progress | **untested -- this is R005** |
+| cross-domain claim survives the length control | untested; `ood_test` is closed |
 
-## R003 headline
+## R004 headline (primary split = `test`, 17 questions, 137 pairs)
 
-16 ood_test questions carry both labels. Macro within-question concordance:
-activation depth-40 **0.938** [0.812, 1.000]; `think_logprob` 0.844 [0.656, 1.000];
-**`token_length` 0.938** [0.844, 1.000], positive on 16/16 questions.
-Paired deltas: activation − think +0.094 [+0.000, +0.250], P(Δ>0)=0.88;
-activation − length **+0.000 [−0.188, +0.125]**, P(Δ>0)=0.44.
+Within-question macro concordance: activation **0.874** [0.727, 0.977];
+`think_logprob` 0.794 [0.664, 0.908]; `token_length` **0.494** [0.321, 0.667].
+Paired delta activation − length [+0.137, +0.605], P(Δ>0) = 0.998.
+On the 52 length-discordant pairs (14 questions): activation 0.923 pooled / 0.914
+macro, above 0.5 on 12/14 questions; `think_logprob` 0.635 pooled.
+Near-matched |Δlen| ≤ 100: activation 0.983, think 0.567 (23 pairs, 10 questions).
 
 ## Next experiment (exactly one)
 
-**R004 — the length control, on `val` and `test`.** `ood_test` is closed (D011).
-val has 30 questions and test 22, with more multi-row questions than ood's mostly
-1v1 pairs, so this is where the comparison has power. No GPU, no refitting of the
-activation probe.
-
-1. Within-question macro concordance for depth-40 activation, `think_logprob` and
-   `token_length` on val and on test, with paired question bootstraps.
-2. The conditional test: does the probe rank YES above NO on pairs where
-   `token_length` does **not** (or where the two prefixes are close in length)?
-   Report the length-discordant subset the way R003 reported the think-discordant one.
-3. Report the length-residualized probe score as the secondary analysis.
+**R005 — question-relative progress.** Build a progress variable that a global linear
+probe could plausibly track across unseen questions: prefix length as a fraction of
+its own rollout's total, and/or the prefix's rank among the prefixes of its question.
+Run exactly the R004 machinery on `test`: within-question concordance for progress,
+then the probe's concordance on the pairs where *progress* is discordant or matched.
+No GPU, no refitting.
 
 Decision rule:
 
-- probe clearly beats length within question on val and test -> H2's cheap
-  explanation is insufficient; residualization against the output features (the
-  originally planned experiment) becomes R005 to separate H1 from H2.
-- probe ties length again with real power -> the honest headline of this project is
-  that a high OOD termination probe is matched, within question, by prefix length,
-  and the writeup should say exactly that.
-- probe loses to length -> same conclusion, stated more strongly.
+- probe still wins on progress-discordant pairs -> the signal is not generic progress
+  either; H1 leads and activation-level residualization becomes R006.
+- probe collapses toward 0.5 there -> the honest headline is that a strong
+  cross-domain termination probe largely tracks question-relative reasoning progress
+  rather than a termination-specific state.
+- too few discordant pairs -> declare underpowered, do not infer either.
 
 Do not reopen `ood_test`. Do not fit new activation probes at other depths.
 
 ## Current blocker
 
-None. R004 needs no GPU: frozen R001 probe scores, cached D007 features, and the
-released `token_length` field.
+None. R005 needs no GPU: frozen R001 probe scores and the released rollout fields.

@@ -1,0 +1,8 @@
+{
+  "run_id": "r004_length_control",
+  "commit": "fdf2cc1-dirty",
+  "upstream_data_commit": "4482324b5",
+  "started_utc": "2026-09-01T21:34:14Z",
+  "host": "cn-h002.server.mila.quebec",
+  "command": "src/length_control.py --run-id r004_length_control"
+}

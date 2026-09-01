@@ -373,3 +373,127 @@ Artifacts:
 - `artifacts/runs/r003_paired_ood/` (config, metrics, metadata, per_question.csv)
 - `artifacts/figures/r003_paired_questions.png`
 - `src/paired_question_analysis.py`
+
+---
+
+## R003 — CORRECTION (wording only; no number changes)
+
+Date: 2026-09-01
+
+Two statements in the R003 entry above are too strong. The numbers stand; the
+original entry is left intact per the append-only rule.
+
+1. R003 controls **question / prompt / topic**, not the reasoning trajectory. The
+   paired YES and NO prefixes within a question generally come from *different
+   rollouts*, so it is not a same-trace matched-pair test.
+2. "Positional information is available to the probe by construction" is wrong for
+   this model. Qwen3 uses rotary position embeddings applied inside attention, not
+   an absolute positional vector added into the residual stream. Whether the depth-40
+   residual carries usable absolute-position or progress information is an empirical
+   question, not a structural given — and that makes the length result *more*
+   interesting, since anything the probe reads about progress it had to build.
+
+---
+
+## R004 — the length control on `test` (primary) and `val` (supplementary)
+
+Commit: entry written at the following commit; run produced under `fdf2cc1` + `src/length_control.py`
+Run IDs: `r004_length_control` (no refitting for A–C; no GPU)
+Date: 2026-09-01
+
+Question:
+When prefix length orders a within-question YES/NO pair the *wrong* way, does the
+frozen depth-40 activation probe still order it correctly?
+
+Hypothesis predictions:
+- H0 predicts `think_logprob` tracks the activation probe on the discordant pairs.
+- H1 predicts the probe stays accurate where length fails.
+- H2 (in its cheap form, "the probe reads depth into the trace") predicts the probe
+  collapses toward 0.5 exactly where length is discordant or matched.
+
+Setup:
+- **Primary confirmatory split: `test`.** `val` is supplementary because depth 40 was
+  selected on val (D010) and cannot carry a depth-40-vs-length claim. `ood_test` is
+  closed (D011) and the script refuses it.
+- Nothing refit for A–C: frozen R001 depth-40 scores, released `token_length`,
+  `think_logprob` from the cached D007 pass.
+- Pair-level analysis over all within-question YES×NO pairs; concordance macro-averaged
+  within question then across questions; 2,000-replicate question bootstrap, paired
+  across scores. Match thresholds |Δlen| ≤ 100 and ≤ 250 were frozen before the run.
+
+Results — A, aggregate within-question concordance:
+
+| split | questions | pairs | activation | `think_logprob` | `token_length` |
+|---|---|---|---|---|---|
+| **test** (primary) | 17 | 137 | **0.874** [0.727, 0.977] | 0.794 [0.664, 0.908] | **0.494** [0.321, 0.667] |
+| val (supplementary) | 11 | 97 | 0.907 [0.801, 0.997] | 0.741 [0.485, 0.968] | 0.653 [0.425, 0.864] |
+
+Paired deltas (test): activation − `think_logprob` [−0.070, +0.223], P(Δ>0) = 0.864;
+activation − `token_length` **[+0.137, +0.605], P(Δ>0) = 0.998**.
+
+Results — B, the primary diagnostic (length-discordant pairs, YES shorter than NO):
+
+| split | discordant pairs | questions | activation pooled / macro [CI] | questions > 0.5 | `think_logprob` pooled / macro |
+|---|---|---|---|---|---|
+| **test** | 52 of 137 (0 tied) | 14 | **0.923 / 0.914 [0.814, 1.000]** | **12/14** | 0.635 / 0.723 |
+| val | 30 of 97 | 6 | 0.933 / 0.944 [0.833, 1.000] | 6/6 | 0.833 / 0.722 |
+
+Results — C, near-length-matched (thresholds frozen in advance):
+
+| split | |Δlen| ≤ 100 | |Δlen| ≤ 250 |
+|---|---|---|
+| test | 23 pairs / 10 questions — activation **0.983**, think 0.567 | 49 pairs / 12 questions — activation **0.986**, think 0.707 |
+| val | 20 pairs / 5 questions — activation 1.000, think 0.975 | 44 pairs / 8 questions — activation 0.938, think 0.782 |
+
+Results — D, secondary: with the nuisance line fit on `val` only
+(score ≈ −0.0111 × token_length + 25.41), the residualised probe scores **0.918**
+[0.794, 0.995] macro on test and 0.864 on the discordant pairs. This removes the
+fitted *marginal* association between one scalar and length; it does not remove
+length information from the representation.
+
+Interpretation:
+This is interpretation band 1, decisively on the primary split. **Prefix length does
+not explain the probe.** Within question on `test`, length is at chance (0.494) while
+the probe is at 0.874; on the 52 pairs where length points the wrong way the probe is
+still right 92% of the time and beats chance on 12 of 14 questions; on the 23 pairs
+whose lengths are within 100 tokens it is at 0.983. `think_logprob` degrades exactly
+where the probe does not (0.635 pooled on discordant pairs, 0.567 on near-matched),
+so the surviving signal is not immediate `</think>` propensity either.
+
+The R003 result therefore does not generalise: length's apparent parity with the probe
+on `ood_test` was a property of that split's 16 mostly-one-versus-one questions, not a
+general fact. The cheap form of H2 — "the probe reads how far into the trace we are" —
+is not supported on the split with power.
+
+Evidence against that interpretation:
+- `test` is an in-distribution split. It shares question families with `train`, so
+  R004 shows the probe beats length *within domain*. The cross-domain claim still
+  rests on `ood_test`, where this comparison came out tied, and that split is closed.
+  A confounded-on-ood / clean-on-test pattern is not fully resolved by "ood is small".
+- 137 pairs come from 17 questions and are not independent; the macro average and the
+  question bootstrap handle the weighting but cannot manufacture degrees of freedom.
+  The activation − `think_logprob` delta on test still spans zero ([−0.070, +0.223]).
+- Length being at chance within question on `test` is itself unexplained. It is not
+  what R003's ood pattern predicted, and no mechanism here says why the two splits
+  differ. Until that is explained, treat "length is irrelevant" as split-specific.
+- `token_length` is one operationalisation of progress. A within-question chance
+  result for absolute length does not rule out a *question-relative* progress
+  variable, which is the version of H2 that would actually explain a probe that
+  generalises across unseen questions. R004 does not test that.
+- D is a two-parameter marginal correction, not a representational one, and its
+  nuisance line was fit on val where the length–score relation may differ.
+- Depth 40 is the val-selected depth; no other depth was examined here, and should
+  not be without a new DECISIONS entry.
+
+Decision:
+Band 1 → length is not sufficient, H1 and the refined form of H2 both remain open.
+**R005 = separate "termination-specific state" from "question-relative reasoning
+progress".** The cheapest version: build a question-relative progress variable from
+the released fields (e.g. prefix length as a fraction of the rollout's own total, or
+rank of the prefix within its question), test it the same way on `test`, and check
+whether the probe still wins on pairs where *that* variable is discordant. Only if it
+does should activation-level residualization (the originally planned R005) be run.
+
+Artifacts:
+- `artifacts/runs/r004_length_control/` (config, metrics, metadata, pairs.csv)
+- `src/length_control.py`

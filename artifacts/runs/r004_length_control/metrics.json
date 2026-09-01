@@ -1,0 +1,349 @@
+{
+  "run_id": "r004_length_control",
+  "depth": 40,
+  "primary_split": "test",
+  "supplementary_split": "val",
+  "closed_splits": [
+    "ood_test"
+  ],
+  "match_thresholds": [
+    100.0,
+    250.0
+  ],
+  "bootstrap": {
+    "n": 2000,
+    "unit": "question"
+  },
+  "splits": {
+    "test": {
+      "n_questions_both_labels": 17,
+      "n_pairs": 137,
+      "A_macro_concordance": {
+        "activation_depth40": 0.8738745498199281,
+        "think_logprob": 0.7938258636788049,
+        "token_length": 0.49412264905962383
+      },
+      "A_ci": {
+        "activation_depth40": {
+          "ci_lo": 0.7267875900360145,
+          "ci_hi": 0.9768157262905163,
+          "n_replicates": 2000
+        },
+        "think_logprob": {
+          "ci_lo": 0.664438900560224,
+          "ci_hi": 0.9081086601307188,
+          "n_replicates": 2000
+        },
+        "token_length": {
+          "ci_lo": 0.321328531412565,
+          "ci_hi": 0.666672919167667,
+          "n_replicates": 2000
+        }
+      },
+      "A_paired_deltas": {
+        "activation_depth40 - think_logprob": {
+          "ci_lo": -0.06992442810457514,
+          "ci_hi": 0.22345750800320122,
+          "frac_replicates_positive": 0.8635,
+          "n_replicates": 2000
+        },
+        "activation_depth40 - token_length": {
+          "ci_lo": 0.13689725890356144,
+          "ci_hi": 0.6052996198479389,
+          "frac_replicates_positive": 0.998,
+          "n_replicates": 2000
+        }
+      },
+      "B_length_pair_counts": {
+        "concordant": 85,
+        "tied": 0,
+        "discordant": 52
+      },
+      "B_discordant": {
+        "label": "length-discordant (YES shorter)",
+        "n_pairs": 52,
+        "n_questions": 14,
+        "activation_depth40_pooled": 0.9230769230769231,
+        "activation_depth40_macro": 0.9142857142857144,
+        "activation_depth40_questions_above_half": 12,
+        "think_logprob_pooled": 0.6346153846153846,
+        "think_logprob_macro": 0.7226190476190476,
+        "think_logprob_questions_above_half": 10,
+        "ci": {
+          "activation_depth40": {
+            "ci_lo": 0.8142857142857143,
+            "ci_hi": 1.0,
+            "n_replicates": 2000
+          },
+          "think_logprob": {
+            "ci_lo": 0.5082440476190476,
+            "ci_hi": 0.9226190476190477,
+            "n_replicates": 2000
+          }
+        },
+        "paired_delta": {
+          "activation_depth40 - think_logprob": {
+            "ci_lo": -0.04883928571428576,
+            "ci_hi": 0.4535714285714286,
+            "frac_replicates_positive": 0.938,
+            "n_replicates": 2000
+          }
+        },
+        "underpowered": false
+      },
+      "C_near_matched": [
+        {
+          "label": "|dlen| <= 100",
+          "n_pairs": 23,
+          "n_questions": 10,
+          "activation_depth40_pooled": 0.9565217391304348,
+          "activation_depth40_macro": 0.9833333333333334,
+          "activation_depth40_questions_above_half": 10,
+          "think_logprob_pooled": 0.6521739130434783,
+          "think_logprob_macro": 0.5666666666666667,
+          "think_logprob_questions_above_half": 5,
+          "ci": {
+            "activation_depth40": {
+              "ci_lo": 0.95,
+              "ci_hi": 1.0,
+              "n_replicates": 2000
+            },
+            "think_logprob": {
+              "ci_lo": 0.26666666666666666,
+              "ci_hi": 0.8333333333333333,
+              "n_replicates": 2000
+            }
+          },
+          "paired_delta": {
+            "activation_depth40 - think_logprob": {
+              "ci_lo": 0.13333333333333353,
+              "ci_hi": 0.7166666666666668,
+              "frac_replicates_positive": 1.0,
+              "n_replicates": 2000
+            }
+          },
+          "underpowered": false
+        },
+        {
+          "label": "|dlen| <= 250",
+          "n_pairs": 49,
+          "n_questions": 12,
+          "activation_depth40_pooled": 0.9591836734693877,
+          "activation_depth40_macro": 0.9864718614718614,
+          "activation_depth40_questions_above_half": 12,
+          "think_logprob_pooled": 0.6938775510204082,
+          "think_logprob_macro": 0.7072871572871572,
+          "think_logprob_questions_above_half": 8,
+          "ci": {
+            "activation_depth40": {
+              "ci_lo": 0.966991341991342,
+              "ci_hi": 1.0,
+              "n_replicates": 2000
+            },
+            "think_logprob": {
+              "ci_lo": 0.4964177489177488,
+              "ci_hi": 0.8992063492063492,
+              "n_replicates": 2000
+            }
+          },
+          "paired_delta": {
+            "activation_depth40 - think_logprob": {
+              "ci_lo": 0.08909992784992787,
+              "ci_hi": 0.48971861471861455,
+              "frac_replicates_positive": 1.0,
+              "n_replicates": 2000
+            }
+          },
+          "underpowered": false
+        }
+      ]
+    },
+    "val": {
+      "n_questions_both_labels": 11,
+      "n_pairs": 97,
+      "A_macro_concordance": {
+        "activation_depth40": 0.9074675324675325,
+        "think_logprob": 0.7413419913419914,
+        "token_length": 0.6525974025974026
+      },
+      "A_ci": {
+        "activation_depth40": {
+          "ci_lo": 0.8014069264069263,
+          "ci_hi": 0.9967532467532468,
+          "n_replicates": 2000
+        },
+        "think_logprob": {
+          "ci_lo": 0.4848484848484848,
+          "ci_hi": 0.9675324675324675,
+          "n_replicates": 2000
+        },
+        "token_length": {
+          "ci_lo": 0.4253246753246753,
+          "ci_hi": 0.8636363636363636,
+          "n_replicates": 2000
+        }
+      },
+      "A_paired_deltas": {
+        "activation_depth40 - think_logprob": {
+          "ci_lo": 0.02922077922077937,
+          "ci_hi": 0.33333333333333337,
+          "frac_replicates_positive": 0.994,
+          "n_replicates": 2000
+        },
+        "activation_depth40 - token_length": {
+          "ci_lo": 0.05519480519480524,
+          "ci_hi": 0.5097402597402596,
+          "frac_replicates_positive": 0.995,
+          "n_replicates": 2000
+        }
+      },
+      "B_length_pair_counts": {
+        "concordant": 67,
+        "tied": 0,
+        "discordant": 30
+      },
+      "B_discordant": {
+        "label": "length-discordant (YES shorter)",
+        "n_pairs": 30,
+        "n_questions": 6,
+        "activation_depth40_pooled": 0.9333333333333333,
+        "activation_depth40_macro": 0.9444444444444443,
+        "activation_depth40_questions_above_half": 6,
+        "think_logprob_pooled": 0.8333333333333334,
+        "think_logprob_macro": 0.7222222222222222,
+        "think_logprob_questions_above_half": 4,
+        "ci": {
+          "activation_depth40": {
+            "ci_lo": 0.8333333333333334,
+            "ci_hi": 1.0,
+            "n_replicates": 2000
+          },
+          "think_logprob": {
+            "ci_lo": 0.38888888888888884,
+            "ci_hi": 1.0,
+            "n_replicates": 2000
+          }
+        },
+        "paired_delta": {
+          "activation_depth40 - think_logprob": {
+            "ci_lo": 0.0,
+            "ci_hi": 0.5555555555555555,
+            "frac_replicates_positive": 0.913,
+            "n_replicates": 2000
+          }
+        },
+        "underpowered": false
+      },
+      "C_near_matched": [
+        {
+          "label": "|dlen| <= 100",
+          "n_pairs": 20,
+          "n_questions": 5,
+          "activation_depth40_pooled": 1.0,
+          "activation_depth40_macro": 1.0,
+          "activation_depth40_questions_above_half": 5,
+          "think_logprob_pooled": 0.9,
+          "think_logprob_macro": 0.975,
+          "think_logprob_questions_above_half": 5,
+          "ci": {
+            "activation_depth40": {
+              "ci_lo": 1.0,
+              "ci_hi": 1.0,
+              "n_replicates": 2000
+            },
+            "think_logprob": {
+              "ci_lo": 0.925,
+              "ci_hi": 1.0,
+              "n_replicates": 2000
+            }
+          },
+          "paired_delta": {
+            "activation_depth40 - think_logprob": {
+              "ci_lo": 0.0,
+              "ci_hi": 0.07499999999999996,
+              "frac_replicates_positive": 0.686,
+              "n_replicates": 2000
+            }
+          },
+          "underpowered": false
+        },
+        {
+          "label": "|dlen| <= 250",
+          "n_pairs": 44,
+          "n_questions": 8,
+          "activation_depth40_pooled": 0.9318181818181818,
+          "activation_depth40_macro": 0.9375,
+          "activation_depth40_questions_above_half": 7,
+          "think_logprob_pooled": 0.8409090909090909,
+          "think_logprob_macro": 0.7824074074074074,
+          "think_logprob_questions_above_half": 6,
+          "ci": {
+            "activation_depth40": {
+              "ci_lo": 0.8125,
+              "ci_hi": 1.0,
+              "n_replicates": 2000
+            },
+            "think_logprob": {
+              "ci_lo": 0.5324074074074074,
+              "ci_hi": 1.0,
+              "n_replicates": 2000
+            }
+          },
+          "paired_delta": {
+            "activation_depth40 - think_logprob": {
+              "ci_lo": 0.0,
+              "ci_hi": 0.39583333333333337,
+              "frac_replicates_positive": 0.9735,
+              "n_replicates": 2000
+            }
+          },
+          "underpowered": false
+        }
+      ]
+    }
+  },
+  "D_residualised": {
+    "nuisance_fit_split": "val",
+    "slope": -0.011078175074007135,
+    "intercept": 25.409049724140548,
+    "interpretation_limit": "removes the fitted MARGINAL association between the scalar probe score and token_length; it does NOT remove length information from the representation",
+    "primary_split_macro_concordance": 0.9179921968787516,
+    "ci": {
+      "ci_lo": 0.7944102641056422,
+      "ci_hi": 0.9952262154861943,
+      "n_replicates": 2000
+    },
+    "discordant": {
+      "label": "residualised, length-discordant",
+      "n_pairs": 52,
+      "n_questions": 14,
+      "activation_depth40_pooled": 0.8461538461538461,
+      "activation_depth40_macro": 0.8642857142857144,
+      "activation_depth40_questions_above_half": 12,
+      "think_logprob_pooled": 0.6346153846153846,
+      "think_logprob_macro": 0.7226190476190476,
+      "think_logprob_questions_above_half": 10,
+      "ci": {
+        "activation_depth40": {
+          "ci_lo": 0.7000000000000001,
+          "ci_hi": 0.9857142857142858,
+          "n_replicates": 2000
+        },
+        "think_logprob": {
+          "ci_lo": 0.5082440476190476,
+          "ci_hi": 0.9226190476190477,
+          "n_replicates": 2000
+        }
+      },
+      "paired_delta": {
+        "activation_depth40 - think_logprob": {
+          "ci_lo": -0.1345535714285715,
+          "ci_hi": 0.41794642857142816,
+          "frac_replicates_positive": 0.8425,
+          "n_replicates": 2000
+        }
+      },
+      "underpowered": false
+    }
+  }
+}
