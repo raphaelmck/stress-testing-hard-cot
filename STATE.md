@@ -6,84 +6,68 @@ Last updated: 2026-09-01
 
 - Task 1 dataset audit complete (`notes/manual_dataset_audit.md`).
 - H0/H1/H2 frozen in `PROJECT_BRIEF.md` before any activation result existed.
-- R001 training sample frozen: 4,000 rows, 500 yes + 500 no per training family
-  (`big_bench`, `gpqa_chem`, `race`, `daily_dilemmas`), seed 42,
-  sample sha256 begins `d9eb713bcd366b6a`. Spans 779 questions, max 41 rows/question.
-- `src/task1_data.py` implemented and validated.
-- `src/extract_task1_activations.py` implemented and validated end to end:
-  - exact upstream prompt construction (released `build_thinking_prompt`);
-  - no truncation; aborts if any example exceeds the context limit;
-  - right-padding invariance verified (bit-identical at all five depths);
-  - preregistered depths 8/24/40/56/64 (blocks 7/23/39/55/63);
-  - base-transformer forward, so no full-sequence vocabulary logits;
-  - final-depth hook + final norm agrees exactly with the model's own
-    `last_hidden_state` (`max_abs_diff=0`), confirming index and norm;
-  - D007 output features cached in the same pass, inaccessible to the probe script;
-  - resumable sharded output; `question_id` preserved on every row;
-  - CUDA residency enforced -- CPU/disk offload aborts;
-  - `--stress` mode for the pre-launch memory tests.
-- `src/fit_task1_probe.py` implemented and validated on synthetic data in the real
-  shard format: L2 logistic regression, C in {0.01, 0.1, 1, 10}, validation-only
-  selection, raw per-example scores retained, question-clustered OOD bootstrap
-  that discards single-label replicates rather than coercing them.
-- Commits: audit `5413fa1`, extraction `d4b72a4`, probe `7367186`.
+- Extraction, probe fitting and the frozen 4,000-row train sample are validated and
+  committed (`5413fa1`, `d4b72a4`, `7367186`, `416fe40`).
+  Sample is deterministic from seed 42: train-only 4,000 rows `9ae14f9e27a5f66d`;
+  full 4,216-row worklist `c261306dde08c8b9` (this is what a run `config.json`
+  records). The value `d9eb713bcd366b6a` recorded here previously was the 10-row
+  `--smoke` worklist hash, not the frozen sample; corrected 2026-09-01, no result
+  depended on it.
+- **R001 complete on the Mila cluster** (A100-80GB, 53.7 min, job 10621220).
+  See `RESULTS.md` R001 for the full table and caveats.
+
+## R001 headline
+
+Max OOD AUROC **0.964 at depth 56** [0.899, 1.000], question-clustered.
+Depth profile 8/24/40/56/64 -> 0.699 / 0.832 / 0.904 / 0.964 / 0.892 OOD.
+Val-selected depth is 40 (OOD 0.904); the two are not separable given the CIs.
+Reproduction bar (>= 0.85) cleared; >= 0.90 rule reached, so **probe optimisation
+stops**. All pre-run gates passed (CUDA residency, activation site == model's own
+`last_hidden_state`, no truncation, 14.4 GB free at the longest example).
 
 ## Key audit findings that constrain interpretation
 
 - Zero `question_id` overlap between any pair of splits.
 - Raw length is a train-only shortcut: AUROC 0.606 train, 0.510 test, 0.584 ood.
-  A strong OOD activation result is not reducible to "positives are longer".
 - Empirical purity differs by split: val/test 40–50/50, ood_test 45–50/50.
-  `val` is both the noisiest-label split and the selection split, so val AUROC
-  below ood AUROC is expected from label noise alone.
+  val is both the noisiest-label split and the selection split.
 - `yes_count + no_count < total_resamples` in 139/216 eval rows, so `yes_count/50`
   is not a calibrated termination probability.
-- 16 of 32 ood_test questions carry both labels (D008 paired control, embargoed).
+- 16 of 32 ood_test questions carry both labels (D008 paired control, now available).
 
 ## Current beliefs
 
-Informal research beliefs, not statistical probabilities. No activation evidence yet.
+Informal research beliefs, not statistical probabilities. R001 was predicted by all
+three hypotheses, so it moved them little; the small shift is from the depth profile
+(peak at 56, not at the final layer), which is weak evidence at these CIs.
 
-- H0 output-proximal: 40%
-- H1 broader latent state: 40%
+- H0 output-proximal: 35%
+- H1 broader latent state: 45%
 - H2 proxy/dataset structure: 20%
 
-## R001 next experiment
+## Next experiment (exactly one)
 
-Run the preregistered Qwen3-32B activation-probe reproduction on the Mila
-cluster. Full runbook: `notes/gpu_runbook.md`.
+**R002 — output-level baseline.** Fit the identical pipeline (L2 logistic, same C
+grid, val-only selection, question-clustered bootstrap) to the D007 features already
+cached in the R001 pass — `think_logit`, `think_logprob`, `think_margin`,
+`next_token_entropy`, `top1_logprob` — with no hidden activations. Same rows, same
+splits. No GPU needed.
 
-Before full extraction, on the real GPU:
+The D007 embargo lifts with the committed R001 entry, by its own terms.
 
-1. Real Qwen3-32B 10-example smoke test (`--smoke`).
-2. Representative ~1.5–2.5k-token throughput/memory test (`--stress`, test B).
-3. Longest selected training prefix (~16.5k tokens) at batch size 1 (`--stress`, test C).
-4. Confirm all parameters/buffers remain CUDA-resident.
-5. Confirm sufficient memory headroom (target: several GB free at peak, not tuned to the edge).
+Decision rule, on OOD AUROC of the best output-level baseline vs R001's 0.964:
 
-Then launch the frozen 4,000-train + all val/test/ood_test extraction, and run the
-frozen probe script immediately after.
+- within ~0.03 -> H0 is doing most of the work; next step is residualising
+  activations against these features, not more probing.
+- 0.05–0.15 below -> a real activation residual exists; go to the depth-vs-output
+  timing comparison (does depth 40 beat the final-layer output signal?).
+- more than ~0.15 below -> H0 is weak here; prioritise D008 within-question paired
+  analysis and the continuous-target check.
 
-Do not inspect D007 output features or run D008 paired analyses until the activation
-reproduction metrics are frozen.
-
-## R001 decision rule
-
-On max OOD AUROC across the five predeclared depths:
-
-- **>= ~0.85** -> reproduction adequate; proceed to explanation tests (lift D007 embargo).
-- **~0.90+** -> stop optimizing the probe entirely.
-- **0.75–0.85** -> investigate sample size / preprocessing / reproduction mismatch.
-- **< 0.75** -> treat as likely pipeline mismatch before any scientific interpretation.
+Report the baseline for each feature alone as well as the combined set; a single
+feature matching 0.96 is a much stronger H0 result than a five-feature combination.
 
 ## Current blocker
 
-None. Compute is resolved: **Mila cluster**, `--gres=gpu:h100:1` or
-`--gres=gpu:a100l:1` (80 GB). Plain `a100` may be the 40 GB variant and must not be
-used -- the extractor aborts rather than offloading (D004, D009).
-
-R001 is ready to run. Follow `notes/gpu_runbook.md`; the batch script is
-`scripts/r001_extract.sbatch`.
-
-**Stop coding.** The infrastructure is sufficient; further engineering before real
-data has diminishing returns.
+None. R002 needs no GPU: everything runs from
+`artifacts/runs/r001_qwen32b/probe_scores.csv` and the cached output features.

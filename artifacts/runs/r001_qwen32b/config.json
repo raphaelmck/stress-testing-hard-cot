@@ -1,0 +1,49 @@
+{
+  "run_id": "r001_qwen32b",
+  "model": "Qwen/Qwen3-32B",
+  "revision": "9216db5781bf21249d130ec9da846c4624c16137",
+  "depths": [
+    8,
+    24,
+    40,
+    56,
+    64
+  ],
+  "block_indices": [
+    7,
+    23,
+    39,
+    55,
+    63
+  ],
+  "preregistered_depths_used": true,
+  "splits": [
+    "train",
+    "val",
+    "test",
+    "ood_test"
+  ],
+  "train_sample": {
+    "seed": 42,
+    "per_family_per_label": 500
+  },
+  "sample_sha256": "c261306dde08c8b9208f421fc898b1e9e6c11b227d2e6db2bbb399ab295b669e",
+  "n_rows": 4216,
+  "truncation": "none",
+  "padding_side": "right",
+  "use_cache": false,
+  "activation_site": "last real prefix token (attention_mask.sum(1)-1)",
+  "activation_dtype": "float16",
+  "output_features": [
+    "think_logit",
+    "think_logprob",
+    "think_margin",
+    "next_token_entropy",
+    "top1_token_id",
+    "top1_logprob"
+  ],
+  "output_feature_embargo": "D007 -- cached, not to be analysed",
+  "token_budget": 16384,
+  "max_batch": 8,
+  "smoke": false
+}

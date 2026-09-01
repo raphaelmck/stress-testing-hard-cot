@@ -1,0 +1,71 @@
+model=Qwen/Qwen3-32B revision=9216db5781bf21249d130ec9da846c4624c16137
+layers=64 hidden=5120 context_limit=40960
+depths=[8, 24, 40, 56, 64] -> zero-indexed blocks=[7, 23, 39, 55, 63]
+work list: 4216 rows tokenised in 55.1s; max tokens=16652
+frozen sample manifest: sample_manifest.csv  sha256=c261306dde08c8b9
+device=cuda dtype=bfloat16
+  gpu0: NVIDIA A100-SXM4-80GB 85.1 GB
+  free before load: 84.6 GB / 85.1 GB
+  all 32.76B parameters CUDA-resident across ['cuda:0']
+  free after load:  19.1 GB / 85.1 GB
+</think> token id=151668 (single token: True)
+4216 rows remaining in 886 batches
+batch 1/886  elapsed=0.0min  eta=37.6min
+  wrote shard_00000 (200 rows)
+batch 26/886  elapsed=0.3min  eta=8.8min
+  wrote shard_00001 (200 rows)
+batch 51/886  elapsed=0.6min  eta=10.3min
+  wrote shard_00002 (200 rows)
+batch 76/886  elapsed=1.1min  eta=11.5min
+  wrote shard_00003 (200 rows)
+batch 101/886  elapsed=1.6min  eta=12.6min
+  wrote shard_00004 (200 rows)
+batch 126/886  elapsed=2.2min  eta=13.4min
+  wrote shard_00005 (200 rows)
+batch 151/886  elapsed=2.9min  eta=14.1min
+  wrote shard_00006 (200 rows)
+batch 176/886  elapsed=3.6min  eta=14.6min
+  wrote shard_00007 (200 rows)
+batch 201/886  elapsed=4.4min  eta=14.9min
+  wrote shard_00008 (200 rows)
+batch 226/886  elapsed=5.2min  eta=15.2min
+  wrote shard_00009 (200 rows)
+batch 251/886  elapsed=6.1min  eta=15.4min
+  wrote shard_00010 (200 rows)
+batch 276/886  elapsed=7.0min  eta=15.5min
+  wrote shard_00011 (200 rows)
+batch 301/886  elapsed=8.1min  eta=15.7min
+  wrote shard_00012 (200 rows)
+batch 326/886  elapsed=9.2min  eta=15.8min
+  wrote shard_00013 (200 rows)
+batch 351/886  elapsed=10.5min  eta=16.0min
+  wrote shard_00014 (200 rows)
+batch 376/886  elapsed=12.0min  eta=16.3min
+  wrote shard_00015 (200 rows)
+batch 401/886  elapsed=14.0min  eta=17.0min
+batch 426/886  elapsed=16.3min  eta=17.6min
+  wrote shard_00016 (204 rows)
+batch 451/886  elapsed=18.6min  eta=17.9min
+batch 476/886  elapsed=20.9min  eta=18.0min
+  wrote shard_00017 (202 rows)
+batch 501/886  elapsed=23.2min  eta=17.8min
+batch 526/886  elapsed=25.8min  eta=17.7min
+batch 551/886  elapsed=28.0min  eta=17.0min
+  wrote shard_00018 (201 rows)
+batch 576/886  elapsed=30.5min  eta=16.4min
+batch 601/886  elapsed=33.2min  eta=15.7min
+batch 626/886  elapsed=36.2min  eta=15.0min
+batch 651/886  elapsed=38.2min  eta=13.8min
+batch 676/886  elapsed=39.4min  eta=12.2min
+  wrote shard_00019 (200 rows)
+batch 701/886  elapsed=40.7min  eta=10.7min
+batch 726/886  elapsed=42.0min  eta=9.3min
+batch 751/886  elapsed=43.4min  eta=7.8min
+batch 776/886  elapsed=45.0min  eta=6.4min
+batch 801/886  elapsed=46.6min  eta=4.9min
+batch 826/886  elapsed=48.4min  eta=3.5min
+batch 851/886  elapsed=50.4min  eta=2.1min
+batch 876/886  elapsed=52.7min  eta=0.6min
+  wrote shard_00020 (200 rows)
+  wrote shard_00021 (9 rows)
+extraction complete in 53.7 min

@@ -193,8 +193,11 @@ batches with an ETA.
 
 **The run is resumable.** If the job is pre-empted or times out, resubmit the same
 script: it reports `resuming: N rows already extracted` and continues from the
-shards on disk. Confirm the frozen sample hash in `config.json` still begins
-`d9eb713bcd366b6a` — if it does not, the sample changed and the run is not R001.
+shards on disk. Confirm `sample_sha256` in `config.json` still begins
+`c261306dde08c8b9` (the full 4,216-row worklist: 4,000 frozen train rows plus all
+of val/test/ood_test) — if it does not, the sample changed and the run is not R001.
+The train-only 4,000-row hash is `9ae14f9e27a5f66d`, and `d9eb713bcd366b6a` is the
+10-row `--smoke` worklist.
 
 ---
 

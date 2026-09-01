@@ -1,0 +1,10 @@
+split,filename,question_id,rollout_idx,prefix_idx,label,family,n_tokens,shard,row_in_shard
+train,gpqa_chem_079_rollout_005_prefix_0.json,gpqa_chem_079,5,0,yes,gpqa_chem,16430,shard_00021,0
+train,gpqa_chem_079_rollout_028_prefix_0.json,gpqa_chem_079,28,0,yes,gpqa_chem,16440,shard_00021,1
+train,gpqa_chem_079_rollout_010_prefix_1.json,gpqa_chem_079,10,1,yes,gpqa_chem,16468,shard_00021,2
+train,gpqa_chem_099_rollout_006_prefix_1.json,gpqa_chem_099,6,1,yes,gpqa_chem,16479,shard_00021,3
+train,gpqa_chem_070_rollout_023_prefix_0.json,gpqa_chem_070,23,0,yes,gpqa_chem,16480,shard_00021,4
+train,gpqa_chem_099_rollout_006_prefix_0.json,gpqa_chem_099,6,0,yes,gpqa_chem,16492,shard_00021,5
+train,gpqa_chem_069_rollout_012_prefix_1.json,gpqa_chem_069,12,1,yes,gpqa_chem,16534,shard_00021,6
+train,gpqa_chem_083_rollout_026_prefix_1.json,gpqa_chem_083,26,1,yes,gpqa_chem,16637,shard_00021,7
+train,gpqa_chem_083_rollout_026_prefix_0.json,gpqa_chem_083,26,0,yes,gpqa_chem,16652,shard_00021,8
