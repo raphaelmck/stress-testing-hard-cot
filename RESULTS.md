@@ -603,3 +603,90 @@ Artifacts:
 - `artifacts/runs/r005_length_balance_audit/` (config, metrics, metadata)
 - `artifacts/figures/r005_length_balance.png`
 - `src/audit_length_balance.py`
+
+---
+
+## R005 — CORRECTION (wording only; no number changes)
+
+Date: 2026-09-01
+
+The R005 entry says ood_test's mean within-question gap is "+432 tokens, smaller
+than the 500-token bucket width, so a procedure that balances in 500-token buckets
+cannot see it by construction". That is stronger than the evidence supports — the
+bucket width is a plausible explanation, not a demonstrated mechanical cause.
+
+Replace with: *global 500-token bucket balancing does not constrain within-prompt or
+within-bucket label–length differences, so a +432-token conditional skew can survive
+despite good global balance.*
+
+---
+
+## R006 — score-level nuisance control on `test` (final experiment)
+
+Commit: entry written at the following commit; run produced under `e204966` + `src/nuisance_control.py`
+Run IDs: `r006_nuisance_control` (nothing refit, no GPU)
+Date: 2026-09-01
+
+Question:
+Does the frozen depth-40 probe score retain held-out predictive information after
+removing its fitted linear association with absolute prefix length and with current
+`</think>` log-probability?
+
+This is a **score-level** nuisance control. It modifies one scalar. It does not
+project anything out of the 5,120-dimensional activation.
+
+Setup:
+- Nuisance fit on `val` only, using **no labels**: OLS of the frozen score `s` on
+  `z_val(token_length)` and `z_val(think_logprob)`. Coefficients and standardisation
+  constants frozen, then applied to `test`:
+  `s_resid = s − β_L·z_val(L) − β_T·z_val(T)`. No reorientation or calibration on
+  test labels. `ood_test` closed (D011).
+- Val fit: `s = 15.000 − 4.245·z(L) + 8.425·z(T)`, **R² = 0.334**
+  (length-only R² = 0.098, think-only R² = 0.274).
+- Pooled AUROC CIs are question-clustered (D006); concordance CIs and all deltas use
+  paired question bootstraps, 2,000 replicates.
+
+Results on `test`:
+
+| score | pooled AUROC [95% CI] | within-question concordance | Δ vs raw (AUROC) | Δ vs raw (concordance) |
+|---|---|---|---|---|
+| raw depth-40 | 0.909 [0.835, 0.966] | 0.874 | — | — |
+| **joint residual (primary)** | **0.831 [0.716, 0.928]** | 0.818 | +0.077 [−0.006, +0.173] | +0.056 [−0.132, +0.240] |
+| length-only residual | 0.882 [0.779, 0.954] | **0.918** | +0.027 [−0.025, +0.086] | −0.044 [−0.191, +0.059] |
+| think-only residual | 0.841 [0.717, 0.934] | 0.868 | +0.068 [−0.008, +0.173] | +0.006 [−0.096, +0.113] |
+
+Against the band frozen before the run (raw reference 0.909): the joint residual
+drops **0.077**, i.e. the middle band — *the nuisances explain part but not all of
+the signal*.
+
+Interpretation:
+The frozen probe score is partly but not mostly a linear function of these two
+nuisances: they explain R² = 0.33 of it on val, and removing both costs 0.077 AUROC
+on held-out `test`. What survives — 0.831 pooled, 0.818 within question — remains far
+above the `think_logprob` baseline on the same split (0.695, R002) and far above
+chance. Almost all of the cost comes from `think_logprob`, not length: removing
+length alone costs 0.027 and actually *raises* within-question concordance to 0.918,
+which is consistent with R004's finding that absolute length is not what the probe
+uses within a question.
+
+Evidence against that interpretation:
+- Every delta CI includes zero (joint: [−0.006, +0.173]). The direction is
+  consistent across all three variants but the magnitude is not resolved by 86 rows
+  from 22 questions.
+- The control is linear and marginal. It says nothing about nonlinear encodings of
+  length, reasoning progress, or output propensity, and a residual that survives a
+  linear control can still be a nonlinear function of the same nuisances.
+- The nuisance coefficients were fit on `val` (72 rows), which is small and is the
+  split the depth was selected on. A different fit split could give a different β.
+- One depth, one split, one probe. `test` is in-domain; nothing here extends the
+  claim across domains, and the split that would (ood_test) is closed and confounded.
+- **This does not establish a termination-specific latent state.** It establishes
+  robustness to two fitted linear nuisance associations, and nothing more.
+
+Decision:
+Per D012, experimentation stops here. R001–R006 are the result set; the writeup
+reports them together with the identification limit as the central caveat.
+
+Artifacts:
+- `artifacts/runs/r006_nuisance_control/` (config, metrics, metadata)
+- `src/nuisance_control.py`

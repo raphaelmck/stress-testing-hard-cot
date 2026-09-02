@@ -1,0 +1,16 @@
+{
+  "run_id": "r006_nuisance_control",
+  "source_run": "r001_qwen32b",
+  "depth": 40,
+  "fit_split": "val",
+  "eval_split": "test",
+  "nuisances": [
+    "token_length",
+    "think_logprob"
+  ],
+  "refit_probe": false,
+  "labels_used_in_nuisance_fit": false,
+  "n_bootstrap": 2000,
+  "seed": 0,
+  "source_sample_sha256": "c261306dde08c8b9208f421fc898b1e9e6c11b227d2e6db2bbb399ab295b669e"
+}

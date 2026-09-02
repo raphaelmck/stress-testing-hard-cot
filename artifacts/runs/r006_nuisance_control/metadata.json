@@ -1,0 +1,8 @@
+{
+  "run_id": "r006_nuisance_control",
+  "commit": "e204966-dirty",
+  "upstream_data_commit": "4482324b5",
+  "started_utc": "2026-09-02T00:48:55Z",
+  "host": "cn-f002.server.mila.quebec",
+  "command": "src/nuisance_control.py --run-id r006_nuisance_control"
+}

@@ -1,0 +1,156 @@
+{
+  "run_id": "r006_nuisance_control",
+  "kind": "score-level nuisance control (NOT representation-level)",
+  "depth": 40,
+  "fit_split": "val",
+  "eval_split": "test",
+  "closed_splits": [
+    "ood_test"
+  ],
+  "labels_used_in_nuisance_fit": false,
+  "nuisance_fit": {
+    "joint": {
+      "b0": 15.000334924397364,
+      "beta_zL": -4.244798819676387,
+      "beta_zT": 8.425279558202211,
+      "r2": 0.3341832222761534,
+      "val_mean": {
+        "L": 939.5694444444445,
+        "T": -28.446988344192505
+      },
+      "val_std": {
+        "L": 485.27586159228633,
+        "T": 5.181625459450474
+      },
+      "n": 72
+    },
+    "length_only": {
+      "beta_z": -5.375970953909002,
+      "r2": 0.09794705639605705
+    },
+    "think_only": {
+      "beta_z": 8.995183275588891,
+      "r2": 0.27421903262633307
+    }
+  },
+  "test": {
+    "raw": {
+      "pooled_auroc": 0.9085992428339643,
+      "auroc_ci": [
+        0.8348876103922045,
+        0.9664920455925927
+      ],
+      "macro_within_question_concordance": 0.8738745498199281
+    },
+    "residual_joint": {
+      "pooled_auroc": 0.8312601406165494,
+      "auroc_ci": [
+        0.716145108129015,
+        0.9277861574668377
+      ],
+      "macro_within_question_concordance": 0.8175270108043218,
+      "delta_auroc_vs_raw": {
+        "delta_point": 0.07733910221741491,
+        "ci_lo": -0.006424689773213463,
+        "ci_hi": 0.17308994197292057,
+        "frac_replicates_positive": 0.962,
+        "n_replicates": 2000,
+        "n_discarded": 0
+      },
+      "delta_concordance_vs_raw": {
+        "a_ci": [
+          0.7267875900360145,
+          0.9768157262905163
+        ],
+        "b_ci": [
+          0.6510766806722689,
+          0.9599677370948376
+        ],
+        "delta_ci": [
+          -0.13235294117647056,
+          0.24017106842737102
+        ],
+        "frac_delta_positive": 0.7075,
+        "n_questions": 17,
+        "delta_point": 0.056347539015606296
+      }
+    },
+    "residual_length_only": {
+      "pooled_auroc": 0.8820984315846403,
+      "auroc_ci": [
+        0.7789021108401313,
+        0.9535399824011439
+      ],
+      "macro_within_question_concordance": 0.9179921968787516,
+      "delta_auroc_vs_raw": {
+        "delta_point": 0.02650081124932402,
+        "ci_lo": -0.025444448397732463,
+        "ci_hi": 0.08565221471471479,
+        "frac_replicates_positive": 0.8435,
+        "n_replicates": 2000,
+        "n_discarded": 0
+      },
+      "delta_concordance_vs_raw": {
+        "a_ci": [
+          0.7267875900360145,
+          0.9768157262905163
+        ],
+        "b_ci": [
+          0.7944102641056422,
+          0.9952262154861943
+        ],
+        "delta_ci": [
+          -0.1911764705882354,
+          0.05882352941176472
+        ],
+        "frac_delta_positive": 0.196,
+        "n_questions": 17,
+        "delta_point": -0.044117647058823484
+      }
+    },
+    "residual_think_only": {
+      "pooled_auroc": 0.8409951325040562,
+      "auroc_ci": [
+        0.7174116927662586,
+        0.9344934707202611
+      ],
+      "macro_within_question_concordance": 0.867797118847539,
+      "delta_auroc_vs_raw": {
+        "delta_point": 0.0676041103299081,
+        "ci_lo": -0.007707830687687108,
+        "ci_hi": 0.17294262639613017,
+        "frac_replicates_positive": 0.9465,
+        "n_replicates": 2000,
+        "n_discarded": 0
+      },
+      "delta_concordance_vs_raw": {
+        "a_ci": [
+          0.7267875900360145,
+          0.9768157262905163
+        ],
+        "b_ci": [
+          0.7502963685474189,
+          0.9632352941176471
+        ],
+        "delta_ci": [
+          -0.09565201080432183,
+          0.11272321428571414
+        ],
+        "frac_delta_positive": 0.504,
+        "n_questions": 17,
+        "delta_point": 0.0060774309723891085
+      }
+    }
+  },
+  "frozen_band": {
+    "raw_reference_auroc": 0.9085992428339643,
+    "joint_residual_drop": 0.07733910221741491,
+    "verdict": "0.03-0.10 drop -- nuisances explain part but not all of the signal"
+  },
+  "limitation": "Survival of this control does NOT prove a termination-specific latent state and does NOT remove nonlinear representations of length, reasoning progress or output propensity from the activation. It shows only robustness to the fitted linear nuisance associations tested here, on one in-domain split, at one val-selected depth.",
+  "bootstrap": {
+    "n": 2000,
+    "auroc_unit": "question cluster",
+    "concordance_unit": "question"
+  }
+}
