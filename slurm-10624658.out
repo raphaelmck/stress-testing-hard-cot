@@ -1,0 +1,85 @@
+host=cn-g019.server.mila.quebec job=10624658
+name, memory.total [MiB], memory.free [MiB]
+NVIDIA A100-SXM4-80GB, 81920 MiB, 81152 MiB
+===== STAGE 1: val propagation smoke =====
+Loading weights:   0%|          | 0/707 [00:00<?, ?it/s]Loading weights:   0%|          | 1/707 [00:00<01:25,  8.31it/s]Loading weights:   0%|          | 2/707 [00:00<01:42,  6.86it/s]Loading weights:   2%|▏         | 12/707 [00:00<00:17, 40.17it/s]Loading weights:   3%|▎         | 23/707 [00:00<00:10, 63.20it/s]Loading weights:   5%|▍         | 34/707 [00:00<00:08, 77.48it/s]Loading weights:   6%|▌         | 43/707 [00:00<00:08, 79.91it/s]Loading weights:   8%|▊         | 56/707 [00:00<00:06, 93.29it/s]Loading weights:   9%|▉         | 66/707 [00:00<00:06, 92.18it/s]Loading weights:  11%|█         | 78/707 [00:01<00:06, 99.51it/s]Loading weights:  13%|█▎        | 89/707 [00:01<00:06, 101.16it/s]Loading weights:  14%|█▍        | 100/707 [00:01<00:06, 101.08it/s]Loading weights:  16%|█▌        | 111/707 [00:01<00:05, 102.41it/s]Loading weights:  17%|█▋        | 122/707 [00:01<00:05, 103.23it/s]Loading weights:  19%|█▉        | 133/707 [00:01<00:05, 104.07it/s]Loading weights:  20%|██        | 144/707 [00:01<00:05, 104.71it/s]Loading weights:  22%|██▏       | 155/707 [00:01<00:05, 103.45it/s]Loading weights:  23%|██▎       | 166/707 [00:01<00:05, 103.85it/s]Loading weights:  25%|██▌       | 177/707 [00:01<00:05, 104.07it/s]Loading weights:  27%|██▋       | 188/707 [00:02<00:04, 104.53it/s]Loading weights:  28%|██▊       | 199/707 [00:02<00:04, 103.08it/s]Loading weights:  30%|██▉       | 210/707 [00:02<00:04, 104.02it/s]Loading weights:  31%|███▏      | 221/707 [00:02<00:04, 104.69it/s]Loading weights:  33%|███▎      | 232/707 [00:02<00:04, 105.39it/s]Loading weights:  34%|███▍      | 243/707 [00:02<00:04, 103.86it/s]Loading weights:  36%|███▌      | 254/707 [00:02<00:04, 104.65it/s]Loading weights:  37%|███▋      | 265/707 [00:02<00:04, 104.05it/s]Loading weights:  39%|███▉      | 276/707 [00:02<00:04, 104.46it/s]Loading weights:  41%|████      | 287/707 [00:03<00:04, 102.30it/s]Loading weights:  42%|████▏     | 298/707 [00:03<00:03, 103.35it/s]Loading weights:  44%|████▎     | 309/707 [00:03<00:03, 104.07it/s]Loading weights:  45%|████▌     | 320/707 [00:03<00:03, 104.36it/s]Loading weights:  47%|████▋     | 331/707 [00:03<00:03, 103.15it/s]Loading weights:  48%|████▊     | 342/707 [00:03<00:03, 104.25it/s]Loading weights:  50%|████▉     | 353/707 [00:03<00:03, 104.59it/s]Loading weights:  51%|█████▏    | 364/707 [00:03<00:03, 103.11it/s]Loading weights:  53%|█████▎    | 375/707 [00:03<00:03, 101.24it/s]Loading weights:  55%|█████▍    | 386/707 [00:03<00:03, 101.69it/s]Loading weights:  56%|█████▌    | 397/707 [00:04<00:03, 102.83it/s]Loading weights:  58%|█████▊    | 408/707 [00:04<00:02, 103.42it/s]Loading weights:  59%|█████▉    | 419/707 [00:04<00:02, 102.52it/s]Loading weights:  61%|██████    | 430/707 [00:04<00:02, 103.50it/s]Loading weights:  62%|██████▏   | 441/707 [00:04<00:02, 103.99it/s]Loading weights:  64%|██████▍   | 452/707 [00:04<00:02, 104.50it/s]Loading weights:  65%|██████▌   | 463/707 [00:04<00:02, 102.68it/s]Loading weights:  67%|██████▋   | 474/707 [00:04<00:02, 103.00it/s]Loading weights:  69%|██████▊   | 485/707 [00:04<00:02, 103.41it/s]Loading weights:  70%|███████   | 496/707 [00:05<00:02, 103.75it/s]Loading weights:  72%|███████▏  | 507/707 [00:05<00:01, 101.48it/s]Loading weights:  73%|███████▎  | 518/707 [00:05<00:01, 101.62it/s]Loading weights:  75%|███████▍  | 529/707 [00:05<00:01, 102.05it/s]Loading weights:  76%|███████▋  | 540/707 [00:05<00:01, 101.23it/s]Loading weights:  78%|███████▊  | 551/707 [00:05<00:01, 99.97it/s] Loading weights:  79%|███████▉  | 562/707 [00:05<00:01, 101.40it/s]Loading weights:  81%|████████  | 573/707 [00:05<00:01, 102.28it/s]Loading weights:  83%|████████▎ | 584/707 [00:05<00:01, 103.07it/s]Loading weights:  84%|████████▍ | 595/707 [00:06<00:01, 102.13it/s]Loading weights:  86%|████████▌ | 606/707 [00:06<00:00, 103.16it/s]Loading weights:  87%|████████▋ | 617/707 [00:06<00:00, 101.83it/s]Loading weights:  89%|████████▉ | 628/707 [00:06<00:00, 101.50it/s]Loading weights:  90%|█████████ | 639/707 [00:06<00:00, 100.24it/s]Loading weights:  92%|█████████▏| 650/707 [00:06<00:00, 101.29it/s]Loading weights:  93%|█████████▎| 661/707 [00:06<00:00, 101.98it/s]Loading weights:  95%|█████████▌| 672/707 [00:06<00:00, 102.55it/s]Loading weights:  97%|█████████▋| 683/707 [00:06<00:00, 101.55it/s]Loading weights:  98%|█████████▊| 694/707 [00:07<00:00, 101.49it/s]Loading weights: 100%|█████████▉| 705/707 [00:07<00:00, 100.90it/s]Loading weights: 100%|██████████| 707/707 [00:07<00:00, 99.35it/s] 
+model on cuda:0; free 17.8 GB / 79.2 GB
+directions ready: ||beta||=7.8492, ||dh|| at 2SD = 4.377, ortho ||dh|| = 4.377
+val: 72 prefixes
+     beta-2  ds req=  -34.36 obs=  -34.33  |dh64|=   38.81 (||h64||=1791)  max|dlogit|=  0.219  d_think_logprob=+0.034
+     beta-1  ds req=  -17.18 obs=  -17.19  |dh64|=   31.09 (||h64||=1791)  max|dlogit|=  0.250  d_think_logprob=-0.115
+     beta+0  ds req=   +0.00 obs=   +0.00  |dh64|=    0.00 (||h64||=1791)  max|dlogit|=  0.000  d_think_logprob=+0.000
+     beta+1  ds req=  +17.18 obs=  +17.19  |dh64|=   29.12 (||h64||=1791)  max|dlogit|=  0.250  d_think_logprob=-0.031
+     beta+2  ds req=  +34.36 obs=  +34.33  |dh64|=   27.98 (||h64||=1791)  max|dlogit|=  0.250  d_think_logprob=-0.031
+    ortho-2  ds req=   +0.00 obs=   +0.00  |dh64|=   46.91 (||h64||=1791)  max|dlogit|=  0.250  d_think_logprob=+0.129
+    ortho+2  ds req=   +0.00 obs=   -0.01  |dh64|=   31.80 (||h64||=1791)  max|dlogit|=  0.250  d_think_logprob=+0.086
+
+PROPAGATION: ds relative error 0.158% | depth-64 changes: True | logits change: True
+
+coherence sample (val, 60 tokens):
+  beta-2  think@ 46  " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option"
+  beta-1  think@ 46  " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option"
+  beta+0  think@ 46  " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option"
+  beta+1  think@ 46  " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option"
+  beta+2  think@ 46  " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option"
+  ortho-2  think@ 46  " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option"
+  ortho+2  think@ 46  " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option"
+
+STAGE 1 PASSED -> /home/mila/m/michnikr/CODE/nanda-w27-app/artifacts/runs/r007_steer_smoke/metrics.json
+===== STAGE 2: frozen test run (once) =====
+Loading weights:   0%|          | 0/707 [00:00<?, ?it/s]Loading weights:   0%|          | 1/707 [00:00<03:56,  2.98it/s]Loading weights:   2%|▏         | 12/707 [00:00<00:20, 34.38it/s]Loading weights:   3%|▎         | 22/707 [00:00<00:12, 53.26it/s]Loading weights:   5%|▍         | 34/707 [00:00<00:09, 71.96it/s]Loading weights:   6%|▌         | 44/707 [00:00<00:08, 78.47it/s]Loading weights:   8%|▊         | 56/707 [00:00<00:07, 88.67it/s]Loading weights:   9%|▉         | 66/707 [00:00<00:07, 89.47it/s]Loading weights:  11%|█         | 77/707 [00:01<00:06, 94.55it/s]Loading weights:  12%|█▏        | 87/707 [00:01<00:06, 94.92it/s]Loading weights:  14%|█▍        | 98/707 [00:01<00:06, 96.78it/s]Loading weights:  16%|█▌        | 111/707 [00:01<00:05, 105.12it/s]Loading weights:  17%|█▋        | 122/707 [00:01<00:05, 105.24it/s]Loading weights:  19%|█▉        | 133/707 [00:01<00:05, 105.74it/s]Loading weights:  20%|██        | 144/707 [00:01<00:05, 105.64it/s]Loading weights:  22%|██▏       | 155/707 [00:01<00:05, 103.59it/s]Loading weights:  23%|██▎       | 166/707 [00:01<00:05, 103.99it/s]Loading weights:  25%|██▌       | 177/707 [00:02<00:05, 104.02it/s]Loading weights:  27%|██▋       | 188/707 [00:02<00:04, 104.38it/s]Loading weights:  28%|██▊       | 199/707 [00:02<00:04, 102.93it/s]Loading weights:  30%|██▉       | 210/707 [00:02<00:04, 103.84it/s]Loading weights:  31%|███▏      | 221/707 [00:02<00:04, 104.51it/s]Loading weights:  33%|███▎      | 232/707 [00:02<00:04, 104.71it/s]Loading weights:  34%|███▍      | 243/707 [00:02<00:04, 103.47it/s]Loading weights:  36%|███▌      | 254/707 [00:02<00:04, 104.10it/s]Loading weights:  37%|███▋      | 265/707 [00:02<00:04, 103.58it/s]Loading weights:  39%|███▉      | 276/707 [00:02<00:04, 103.81it/s]Loading weights:  41%|████      | 287/707 [00:03<00:04, 101.48it/s]Loading weights:  42%|████▏     | 298/707 [00:03<00:03, 103.04it/s]Loading weights:  44%|████▎     | 309/707 [00:03<00:03, 103.82it/s]Loading weights:  45%|████▌     | 320/707 [00:03<00:03, 104.48it/s]Loading weights:  47%|████▋     | 331/707 [00:03<00:03, 103.36it/s]Loading weights:  48%|████▊     | 342/707 [00:03<00:03, 104.14it/s]Loading weights:  50%|████▉     | 353/707 [00:03<00:03, 103.36it/s]Loading weights:  51%|█████▏    | 364/707 [00:03<00:03, 102.59it/s]Loading weights:  53%|█████▎    | 375/707 [00:03<00:03, 100.55it/s]Loading weights:  55%|█████▍    | 386/707 [00:04<00:03, 100.85it/s]Loading weights:  56%|█████▌    | 397/707 [00:04<00:03, 102.23it/s]Loading weights:  58%|█████▊    | 408/707 [00:04<00:02, 101.48it/s]Loading weights:  59%|█████▉    | 419/707 [00:04<00:02, 100.54it/s]Loading weights:  61%|██████    | 430/707 [00:04<00:02, 102.02it/s]Loading weights:  62%|██████▏   | 441/707 [00:04<00:02, 103.20it/s]Loading weights:  64%|██████▍   | 452/707 [00:04<00:02, 103.69it/s]Loading weights:  65%|██████▌   | 463/707 [00:04<00:02, 101.91it/s]Loading weights:  67%|██████▋   | 474/707 [00:04<00:02, 102.28it/s]Loading weights:  69%|██████▊   | 485/707 [00:05<00:02, 103.32it/s]Loading weights:  70%|███████   | 496/707 [00:05<00:02, 103.61it/s]Loading weights:  72%|███████▏  | 507/707 [00:05<00:01, 101.17it/s]Loading weights:  73%|███████▎  | 518/707 [00:05<00:01, 101.30it/s]Loading weights:  75%|███████▍  | 529/707 [00:05<00:01, 101.45it/s]Loading weights:  76%|███████▋  | 540/707 [00:05<00:01, 100.47it/s]Loading weights:  78%|███████▊  | 551/707 [00:05<00:01, 99.39it/s] Loading weights:  79%|███████▉  | 562/707 [00:05<00:01, 101.14it/s]Loading weights:  81%|████████  | 573/707 [00:05<00:01, 102.06it/s]Loading weights:  83%|████████▎ | 584/707 [00:05<00:01, 103.14it/s]Loading weights:  84%|████████▍ | 595/707 [00:06<00:01, 102.10it/s]Loading weights:  86%|████████▌ | 606/707 [00:06<00:00, 103.07it/s]Loading weights:  87%|████████▋ | 617/707 [00:06<00:00, 101.69it/s]Loading weights:  89%|████████▉ | 628/707 [00:06<00:00, 101.09it/s]Loading weights:  90%|█████████ | 639/707 [00:06<00:00, 99.61it/s] Loading weights:  92%|█████████▏| 650/707 [00:06<00:00, 100.42it/s]Loading weights:  93%|█████████▎| 661/707 [00:06<00:00, 101.37it/s]Loading weights:  95%|█████████▌| 672/707 [00:06<00:00, 101.91it/s]Loading weights:  97%|█████████▋| 683/707 [00:06<00:00, 99.16it/s] Loading weights:  98%|█████████▊| 693/707 [00:07<00:00, 96.92it/s]Loading weights:  99%|█████████▉| 703/707 [00:07<00:00, 97.43it/s]Loading weights: 100%|██████████| 707/707 [00:07<00:00, 98.13it/s]
+model on cuda:0; free 17.8 GB / 79.2 GB
+directions ready: ||beta||=7.8492, ||dh|| at 2SD = 4.377, ortho ||dh|| = 4.377
+test: 86 prefixes
+  prefix 10/86  elapsed=4.8min  eta=36.2min
+  prefix 20/86  elapsed=9.3min  eta=30.5min
+  prefix 30/86  elapsed=13.1min  eta=24.5min
+  prefix 40/86  elapsed=16.5min  eta=18.9min
+  prefix 50/86  elapsed=19.6min  eta=14.1min
+  prefix 60/86  elapsed=22.9min  eta=9.9min
+  prefix 70/86  elapsed=26.8min  eta=6.1min
+  prefix 80/86  elapsed=31.2min  eta=2.3min
+
+wrote /home/mila/m/michnikr/CODE/nanda-w27-app/artifacts/runs/r007_steer_test/generations.csv (2408 rows) in 34.3 min
+done
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                                              : Wed Sep  2 00:04:14 2026
+Driver Version                                         : 580.159.03
+CUDA Version                                           : 13.0
+
+Attached GPUs                                          : 1
+GPU 00000000:01:00.0
+    Accounting Mode                                    : Enabled
+    Accounting Mode Buffer Size                        : 4000
+    Accounted Processes
+        Process ID                                     : 2607540
+            GPU Utilization                            : 97 %
+            Memory Utilization                         : 53 %
+            Max memory usage                           : 72878 MiB
+            Time                                       : 2073765 ms
+            Is Running                                 : 0
+
+Wed Sep  2 00:04:14 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.159.03             Driver Version: 580.159.03     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100-SXM4-80GB          On  |   00000000:01:00.0 Off |                    0 |
+| N/A   51C    P0            131W /  500W |       0MiB /  81920MiB |     78%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

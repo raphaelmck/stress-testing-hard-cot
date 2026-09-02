@@ -1,0 +1,277 @@
+{
+  "run_id": "r007_steer_smoke",
+  "stage": "1 (val smoke)",
+  "propagation_checks": [
+    {
+      "filename": "bb_date_understanding_v_000_rollout_098_prefix_1.json",
+      "condition": "beta-2",
+      "ds_requested": -34.356,
+      "ds_observed": -34.33007831991569,
+      "d_h64": 38.8133317425198,
+      "h64_norm": 1791.1520924305203,
+      "d_logits": 0.21875,
+      "think_logprob": -26.950391663231372,
+      "d_think_logprob": 0.03442536119752759
+    },
+    {
+      "filename": "bb_date_understanding_v_000_rollout_098_prefix_1.json",
+      "condition": "beta-1",
+      "ds_requested": -17.178,
+      "ds_observed": -17.186699227589344,
+      "d_h64": 31.094446421736325,
+      "h64_norm": 1791.1520924305203,
+      "d_logits": 0.25,
+      "think_logprob": -27.099423225900725,
+      "d_think_logprob": -0.1146062014718261
+    },
+    {
+      "filename": "bb_date_understanding_v_000_rollout_098_prefix_1.json",
+      "condition": "beta+0",
+      "ds_requested": 0.0,
+      "ds_observed": 0.0,
+      "d_h64": 0.0,
+      "h64_norm": 1791.1520924305203,
+      "d_logits": 0.0,
+      "think_logprob": -26.9848170244289,
+      "d_think_logprob": 0.0
+    },
+    {
+      "filename": "bb_date_understanding_v_000_rollout_098_prefix_1.json",
+      "condition": "beta+1",
+      "ds_requested": 17.178,
+      "ds_observed": 17.19474423593396,
+      "d_h64": 29.115616428742065,
+      "h64_norm": 1791.1520924305203,
+      "d_logits": 0.25,
+      "think_logprob": -27.016121006877583,
+      "d_think_logprob": -0.0313039824486836
+    },
+    {
+      "filename": "bb_date_understanding_v_000_rollout_098_prefix_1.json",
+      "condition": "beta+2",
+      "ds_requested": 34.356,
+      "ds_observed": 34.329726031493465,
+      "d_h64": 27.984691351844198,
+      "h64_norm": 1791.1520924305203,
+      "d_logits": 0.25,
+      "think_logprob": -27.015481759929077,
+      "d_think_logprob": -0.030664735500177898
+    },
+    {
+      "filename": "bb_date_understanding_v_000_rollout_098_prefix_1.json",
+      "condition": "ortho-2",
+      "ds_requested": 0.0,
+      "ds_observed": 0.0023037408596490727,
+      "d_h64": 46.91424720086196,
+      "h64_norm": 1791.1520924305203,
+      "d_logits": 0.25,
+      "think_logprob": -26.85584138389674,
+      "d_think_logprob": 0.12897564053216115
+    },
+    {
+      "filename": "bb_date_understanding_v_000_rollout_098_prefix_1.json",
+      "condition": "ortho+2",
+      "ds_requested": 0.0,
+      "ds_observed": -0.0056896427590749366,
+      "d_h64": 31.802907070700048,
+      "h64_norm": 1791.1520924305203,
+      "d_logits": 0.25,
+      "think_logprob": -26.89859744964786,
+      "d_think_logprob": 0.08621957478104036
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json",
+      "condition": "beta-2",
+      "ds_requested": -34.356,
+      "ds_observed": -34.35533985344695,
+      "d_h64": 23.696737254770042,
+      "h64_norm": 1685.9931361425245,
+      "d_logits": 0.375,
+      "think_logprob": -40.14661943305202,
+      "d_think_logprob": 0.03613612769022723
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json",
+      "condition": "beta-1",
+      "ds_requested": -17.178,
+      "ds_observed": -17.150894122959905,
+      "d_h64": 19.76536894017996,
+      "h64_norm": 1685.9931361425245,
+      "d_logits": 0.25,
+      "think_logprob": -40.24037217342066,
+      "d_think_logprob": -0.05761661267841589
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json",
+      "condition": "beta+0",
+      "ds_requested": 0.0,
+      "ds_observed": 0.0,
+      "d_h64": 0.0,
+      "h64_norm": 1685.9931361425245,
+      "d_logits": 0.0,
+      "think_logprob": -40.182755560742244,
+      "d_think_logprob": 0.0
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json",
+      "condition": "beta+1",
+      "ds_requested": 17.178,
+      "ds_observed": 17.153480011342396,
+      "d_h64": 17.3487152965162,
+      "h64_norm": 1685.9931361425245,
+      "d_logits": 0.25,
+      "think_logprob": -40.183144627745364,
+      "d_think_logprob": -0.0003890670031196919
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json",
+      "condition": "beta+2",
+      "ds_requested": 34.356,
+      "ds_observed": 34.346849894941386,
+      "d_h64": 21.836047515864962,
+      "h64_norm": 1685.9931361425245,
+      "d_logits": 0.3125,
+      "think_logprob": -40.213489572245194,
+      "d_think_logprob": -0.03073401150295041
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json",
+      "condition": "ortho-2",
+      "ds_requested": 0.0,
+      "ds_observed": -0.009499080773523044,
+      "d_h64": 21.629608324784094,
+      "h64_norm": 1685.9931361425245,
+      "d_logits": 0.5,
+      "think_logprob": -40.15134837386679,
+      "d_think_logprob": 0.031407186875455295
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_000_rollout_134_prefix_0.json",
+      "condition": "ortho+2",
+      "ds_requested": 0.0,
+      "ds_observed": -0.004624361863397736,
+      "d_h64": 23.618856085291473,
+      "h64_norm": 1685.9931361425245,
+      "d_logits": 0.375,
+      "think_logprob": -40.18314475239038,
+      "d_think_logprob": -0.00038919164813933094
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_001_rollout_015_prefix_0.json",
+      "condition": "beta-2",
+      "ds_requested": -34.356,
+      "ds_observed": -34.34219344842219,
+      "d_h64": 19.75418075542783,
+      "h64_norm": 1928.6528219972624,
+      "d_logits": 0.25,
+      "think_logprob": -31.839787602270796,
+      "d_think_logprob": 0.09196223333111675
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_001_rollout_015_prefix_0.json",
+      "condition": "beta-1",
+      "ds_requested": -17.178,
+      "ds_observed": -17.179443056275435,
+      "d_h64": 20.320698207551704,
+      "h64_norm": 1928.6528219972624,
+      "d_logits": 0.25,
+      "think_logprob": -31.9024830671106,
+      "d_think_logprob": 0.029266768491311268
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_001_rollout_015_prefix_0.json",
+      "condition": "beta+0",
+      "ds_requested": 0.0,
+      "ds_observed": 0.0,
+      "d_h64": 0.0,
+      "h64_norm": 1928.6528219972624,
+      "d_logits": 0.0,
+      "think_logprob": -31.931749835601913,
+      "d_think_logprob": 0.0
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_001_rollout_015_prefix_0.json",
+      "condition": "beta+1",
+      "ds_requested": 17.178,
+      "ds_observed": 17.177107481638508,
+      "d_h64": 18.999223291683684,
+      "h64_norm": 1928.6528219972624,
+      "d_logits": 0.25,
+      "think_logprob": -31.93177682996536,
+      "d_think_logprob": -2.699436344855144e-05
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_001_rollout_015_prefix_0.json",
+      "condition": "beta+2",
+      "ds_requested": 34.356,
+      "ds_observed": 34.33458955049322,
+      "d_h64": 20.640823120737277,
+      "h64_norm": 1928.6528219972624,
+      "d_logits": 0.25,
+      "think_logprob": -31.81508582329622,
+      "d_think_logprob": 0.11666401230569434
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_001_rollout_015_prefix_0.json",
+      "condition": "ortho-2",
+      "ds_requested": 0.0,
+      "ds_observed": 0.007756498567683151,
+      "d_h64": 22.67213958228304,
+      "h64_norm": 1928.6528219972624,
+      "d_logits": 0.3125,
+      "think_logprob": -31.90050507960828,
+      "d_think_logprob": 0.031244755993633078
+    },
+    {
+      "filename": "bb_logical_deduction_five_objects_v_001_rollout_015_prefix_0.json",
+      "condition": "ortho+2",
+      "ds_requested": 0.0,
+      "ds_observed": -0.004451608538027563,
+      "d_h64": 20.85922083422665,
+      "h64_norm": 1928.6528219972624,
+      "d_logits": 0.25,
+      "think_logprob": -31.996095018000176,
+      "d_think_logprob": -0.06434518239826303
+    }
+  ],
+  "ds_max_relative_error": 0.0015779413808415567,
+  "depth64_changes": true,
+  "logits_change": true,
+  "samples": [
+    {
+      "condition": "beta-2",
+      "think_token_position": 46,
+      "text": " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option (B).\n</think>"
+    },
+    {
+      "condition": "beta-1",
+      "think_token_position": 46,
+      "text": " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option (B).\n</think>"
+    },
+    {
+      "condition": "beta+0",
+      "think_token_position": 46,
+      "text": " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option (B).\n</think>"
+    },
+    {
+      "condition": "beta+1",
+      "think_token_position": 46,
+      "text": " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option (B).\n</think>"
+    },
+    {
+      "condition": "beta+2",
+      "think_token_position": 46,
+      "text": " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option (B).\n</think>"
+    },
+    {
+      "condition": "ortho-2",
+      "think_token_position": 46,
+      "text": " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option (B).\n</think>"
+    },
+    {
+      "condition": "ortho+2",
+      "think_token_position": 46,
+      "text": " 15 + 7 = 22, so it's still in October. Therefore, the date one week from today is 10/22/1924, which is option (B).\n</think>"
+    }
+  ]
+}

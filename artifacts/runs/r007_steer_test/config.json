@@ -1,0 +1,26 @@
+{
+  "run_id": "r007_steer_test",
+  "decision": "D013",
+  "depth": 40,
+  "sigma_val": 17.178,
+  "beta_strengths": [
+    -2.0,
+    -1.0,
+    0.0,
+    1.0,
+    2.0
+  ],
+  "ortho_strengths": [
+    -2.0,
+    2.0
+  ],
+  "ortho_seed": 20260901,
+  "temperature": 0.7,
+  "max_new_tokens": 60,
+  "n_replicates": 4,
+  "split": "test",
+  "schedule": "sustained newest-token at block-39 output",
+  "seeding": "sha256(filename|replicate), shared across all conditions",
+  "model": "Qwen/Qwen3-32B",
+  "revision": "9216db5781bf21249d130ec9da846c4624c16137"
+}

@@ -690,3 +690,120 @@ reports them together with the identification limit as the central caveat.
 Artifacts:
 - `artifacts/runs/r006_nuisance_control/` (config, metrics, metadata)
 - `src/nuisance_control.py`
+
+---
+
+## R007 — causal steering along the frozen depth-40 probe direction (D013)
+
+Commit: entry written at the following commit; runs produced under `0232cdd` + `src/steer_termination.py`
+Run IDs: `r007_steering_preflight` (Stage 0, CPU), `r007_steer_smoke` (Stage 1, val),
+`r007_steer_test` (Stage 2, the frozen test run; job 10624658, 36 min on an A100-80GB)
+Date: 2026-09-02
+
+Question:
+Does moving the depth-40 residual stream along the frozen probe direction causally
+change when Qwen3-32B emits `</think>`?
+
+Hypothesis predictions (frozen in D013 before any steering behaviour was seen):
+- a directional, roughly dose-responsive effect with small orthogonal controls would
+  be strong evidence that the decoded direction is causally used;
+- movement of `think_logprob` without behavioural movement would be an informative
+  local-vs-future dissociation;
+- generic propagation without either is a **weak** negative, explicitly not
+  "decodable =/= causal".
+
+Setup:
+- Frozen depth-40 probe (D010). Raw-space direction `beta[j] = coef_[j]/scaler.scale_[j]`,
+  `||beta|| = 7.849`; edit `dh = (ds/||beta||^2) * beta` moves the frozen score by
+  exactly `ds` (verified, 1.7e-7 relative error).
+- Seven conditions: beta at `ds` in {-2,-1,0,+1,+2} x `sigma_val` (17.178), plus one
+  fixed seeded raw-space orthogonal direction matched in `||dh||` at -2 and +2.
+  A 2-SD edit is **2.6%** of the depth-40 residual norm.
+- Sustained newest-token schedule; all 86 `test` prefixes; 4 replicates; temperature
+  0.7; 60-token cap; seeds from `sha256(filename|replicate)` shared across all seven
+  conditions (common random numbers). 2,408 generations. `ood_test` never touched.
+- Replicates aggregated to a per-prefix rate, then question-clustered bootstrap with
+  paired resamples for deltas.
+
+Stage 1 propagation (val, mandatory):
+requested vs observed `ds` at depth 40 within **0.158%**; depth-64 state moves
+`||dh_64|| = 28-47` against `||h_64|| = 1791` (~1.6-2.6%); logits change, but by
+`max|dlogit| = 0.250` in every non-zero condition -- exactly one bf16 ULP at that
+logit scale, so that gate passed at the numerical floor and the depth-64 change is
+the real propagation evidence. `think_logprob` moved -0.115 to +0.129 with **no**
+monotone ordering in beta (-2: +0.034, -1: -0.115, +1: -0.031, +2: -0.031), while the
+orthogonal controls moved it +0.129 and +0.086. Output stayed fully coherent.
+
+**Baseline validation (this is the strongest number in the run):**
+under the unsteered condition the generation protocol reproduces the released labels
+almost exactly -- released YES prefixes terminate within 60 tokens at **0.895**
+(0.866 inside the released 20-60 window), released NO prefixes at **0.000**.
+The protocol is measuring the right thing.
+
+Results -- P(`</think>` within 60 generated tokens), macro over prefixes:
+
+| condition | rate [95% CI] |
+|---|---|
+| beta −2 | 0.439 [0.398, 0.477] |
+| beta −1 | 0.436 [0.389, 0.483] |
+| beta 0 (baseline) | 0.448 [0.406, 0.493] |
+| beta +1 | 0.459 [0.419, 0.500] |
+| beta +2 | 0.453 [0.412, 0.497] |
+| ortho −2 | 0.442 [0.403, 0.483] |
+| ortho +2 | 0.459 [0.417, 0.503] |
+
+Primary contrast **P(+2beta) − P(−2beta) = +0.0145 [+0.0019, +0.0306]**, P(delta>0) = 0.98.
+Matched-norm orthogonal contrast **P(+2 ortho) − P(−2 ortho) = +0.0174 [+0.0000, +0.0404]**,
+P = 0.95 — **larger than the beta effect**.
+
+Secondary:
+- dose response is flat and non-monotone: 0.439, 0.436, 0.448, 0.459, 0.453.
+- released YES window (20-60): 0.422 / 0.422 / 0.433 / 0.445 / 0.436; tokens 1-19 is
+  0.015-0.017 in every condition, so nothing is being forced to stop immediately.
+- label-stratified: on released **NO** prefixes `+2beta` induces termination in
+  **0.000** of cases (baseline 0.000; the orthogonal control gives 0.006). On released
+  **YES** prefixes `−2beta` moves 0.895 -> 0.878.
+- tokens to termination among terminated: median 31-32 in every condition.
+- under common random numbers, **85-88%** of steered continuations are token-identical
+  to baseline in every condition, including the orthogonal ones.
+
+Interpretation:
+This is the **weak negative** cell of D013's frozen table, and it is weak by
+construction, not by rhetoric. The intervention verifiably lands (Δs to 0.16%) and
+verifiably propagates to the final layer (~2% of the depth-64 norm), yet a 2-SD edit
+moves termination by about one percentage point — and a matched-norm *random*
+direction moves it slightly more. The effect is therefore not directional, not
+dose-responsive, and not specific to the probe direction. The single sharpest
+statement available: on prefixes the benchmark labels NO, where the model terminates
+within 60 tokens **0%** of the time, pushing the probe score two validation SDs toward
+"about to terminate" produced termination in **0 of 172** generations.
+
+Evidence against over-reading this:
+- **A null here is weak evidence, as preregistered.** The edit is 2.6% of the
+  residual norm at one layer along one direction under one schedule. Nothing rules
+  out a larger edit, a different layer, a multi-token or multi-layer schedule, or a
+  high-dimensional intervention succeeding.
+- The primary beta contrast does technically exclude zero (+0.0019 lower bound). It
+  is the orthogonal control at +0.0174 that removes the causal reading, not the
+  interval — a matched-norm nuisance perturbation reproduces it.
+- The bf16 logit gate passed at one ULP. A cleaner design would have measured logit
+  movement in a higher-precision head or against a per-condition noise floor.
+- `think_logprob` did not move monotonically either, so this run does not deliver the
+  "interesting intermediate" dissociation; it delivers less than that.
+- Sampling with common random numbers makes paired comparisons precise but means most
+  continuations are literally identical; the design measures whether the edit ever
+  changes the sampled trajectory, and mostly it does not.
+- The 60-token cap cannot express the released NO criterion (`</think>` after token
+  200 or absent), so "no termination within 60" is a proxy.
+- No conclusion about the *decoding* result follows. R001-R006 stand unchanged.
+
+Decision:
+Experimentation is closed permanently (D013). The project's causal claim is exactly
+one sentence: a small, verified, matched-control edit along the frozen probe
+direction did not measurably change termination behaviour, and that does not
+establish the absence of a causal termination mechanism. Write up R001-R007.
+
+Artifacts:
+- `artifacts/runs/r007_steering_preflight/`, `artifacts/runs/r007_steer_smoke/`,
+  `artifacts/runs/r007_steer_test/` (config, metrics, metadata, generations.csv)
+- `src/steering_preflight.py`, `src/steer_termination.py`, `src/analyze_steering.py`

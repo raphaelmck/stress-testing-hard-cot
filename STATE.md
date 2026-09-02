@@ -34,7 +34,10 @@ Last updated: 2026-09-01
   mechanical cause.)
 - **R006 complete** (no GPU, nothing refit): score-level nuisance control on `test`.
   Joint residual 0.831 [0.716, 0.928] vs raw 0.909; drop 0.077, middle band.
-  **Experimentation stops here (D012).**
+- **R007 complete** (D013, one A100 run): causal steering along the frozen depth-40
+  direction. The edit lands and propagates but does not move behaviour; a
+  matched-norm orthogonal control moves it slightly more.
+  **Experimentation is now closed permanently.**
 
 ## R001 headline
 
@@ -57,19 +60,16 @@ stops**. All pre-run gates passed (CUDA residency, activation site == model's ow
 
 ## Current beliefs
 
-Final for this sprint. Informal research beliefs, not statistical probabilities.
+Final. Informal research beliefs, not statistical probabilities.
 
-- H0 immediate-output: 15%. `think_logprob` reaches 0.807 OOD alone but is at chance
-  on the training distribution and collapses to 0.57-0.64 where the probe holds
-  above 0.9 (R002, R004). It is the largest single nuisance in R006 nonetheless.
-- H1 broader termination-ready latent state: 50%.
-- H2 generic progress / other shortcut: 35%. Raw length is falsified in-domain
-  (R004); a question-relative progress variable is neither tested nor cleanly
-  testable on the released splits.
+- H0 immediate-output: 15%
+- H1 broader termination-ready latent state: 45% (down from 50% -- R007 found no
+  causal signature, which is weak evidence but not zero evidence)
+- H2 generic progress / other shortcut: 40%
 
-The load-bearing conclusion is not a probability: **the released ood_test split
-cannot discriminate H1 from H2** (D012), while in-domain `test` shows signal beyond
-length, immediate stop propensity, and their fitted linear associations.
+Two load-bearing conclusions are not probabilities: the released `ood_test` split
+cannot discriminate H1 from H2 (D012), and the project has **no** causal evidence
+either way (R007 is a weak null by design).
 
 ## Where the evidence stands
 
@@ -81,37 +81,33 @@ length, immediate stop propensity, and their fitted linear associations.
 | more than raw prefix length, in-domain | R004 on `test`, yes (0.874 vs 0.494) |
 | survives a linear control for length + stop propensity | R006, yes, at a cost (0.909 -> 0.831) |
 | more than reasoning progress, cross-domain | not establishable on the released ood split (R005/D012) |
-| a termination-specific latent state exists | **not established**; no intervention was run |
+| the decoded direction is causally used for stopping | **no evidence** (R007 null; weak by construction) |
 
-## R006 headline (test; nuisance fit on val, labels unused)
+## R007 headline (test, 2,408 generations, 7 conditions)
 
-Val nuisance fit R^2 = 0.334 (length-only 0.098, think-only 0.274).
+Baseline protocol validation: released YES prefixes terminate within 60 tokens at
+**0.895**, released NO at **0.000** -- the generation setup reproduces the labels.
 
-| score | pooled AUROC [CI] | within-question |
-|---|---|---|
-| raw depth-40 | 0.909 [0.835, 0.966] | 0.874 |
-| joint residual | **0.831 [0.716, 0.928]** | 0.818 |
-| length-only residual | 0.882 [0.779, 0.954] | 0.918 |
-| think-only residual | 0.841 [0.717, 0.934] | 0.868 |
+P(`</think>` within 60): beta -2/-1/0/+1/+2 = 0.439 / 0.436 / 0.448 / 0.459 / 0.453.
+Primary contrast +2beta - -2beta = **+0.0145 [+0.0019, +0.0306]**; matched-norm
+orthogonal contrast **+0.0174 [+0.0000, +0.0404]**, i.e. larger. On released-NO
+prefixes, +2beta produced termination in **0 of 172** generations. 85-88% of steered
+continuations are token-identical to baseline under common random numbers.
 
-Paired delta raw − joint residual: +0.077 [−0.006, +0.173]. Almost all of the cost
-comes from `think_logprob`; removing length alone costs 0.027 and *raises*
-within-question concordance.
+The edit verifiably lands (Δs to 0.16%) and propagates (~2% of the depth-64 norm), so
+this is a real null rather than a broken intervention -- but it is a null for one
+direction, one layer, one schedule, at 2.6% of the residual norm, and it does not
+establish the absence of a causal termination mechanism.
 
-## Next step: no more experiments (D012)
+## Next step: no more experiments
 
-Write up R001-R006. The contribution is not "we found the termination state"; it is:
-strong cross-domain linear decodability does not by itself identify a domain-general
-termination representation. This project reproduces the result, rules out the
-simple output-proximal and raw-length explanations in-domain, and shows that the
-released OOD evaluation leaves a question-conditional length confound that global
-length balancing does not constrain.
-
-Open questions worth naming rather than running: a question-relative progress
-control that does not use future information; a representation-level (not
-score-level) nuisance projection; and any causal intervention, of which this project
-ran none.
+Write up R001-R007. The contribution: strong cross-domain linear decodability does
+not by itself identify a domain-general termination representation. This project
+reproduces the result, rules out the output-proximal and raw-length explanations
+in-domain, shows the released OOD evaluation leaves a question-conditional length
+confound that global length balancing does not constrain, and finds no causal effect
+of the decoded direction under a small, verified, matched-control intervention.
 
 ## Current blocker
 
-None. All six experiments are complete; the remaining work is the writeup.
+None. All seven experiments are complete; the remaining work is the writeup.
