@@ -380,3 +380,94 @@ on `test`) and what the released evaluation does not let anyone establish
 Revisit if:
 R006 comes back ambiguous. Then the writeup reports R001-R005 and names R006 as the
 open question rather than running a sixth variant of it.
+
+---
+
+## D013 — one causal intervention (R007), fully frozen before Stage 1; supersedes D012's stop
+
+Date: 2026-09-01
+
+Context:
+D012 closed experimentation at R006 because the remaining budget bought either one
+more control or a writeup. The Stage-0 preflight (`r007_steering_preflight`, no GPU,
+no behavioural outcome) changed the calculus: the frozen depth-40 fit reproduces the
+committed R001 scores to 2.0e-7 relative, the raw-space direction
+`beta_raw[j] = coef_[j] / scaler.scale_[j]` has norm 7.849, the edit
+`dh = (ds/||beta||^2) * beta` moves the frozen score by exactly `ds` (1.7e-7 relative
+error), and a 2-val-SD edit is only **2.6%** of the depth-40 residual norm. A small,
+well-parameterised intervention is therefore available, and the project's one
+structural gap is that every result so far is correlational.
+
+Decision:
+Run exactly one intervention experiment, R007, then close experimentation
+permanently regardless of outcome. Everything below is frozen BEFORE any steering
+behaviour is observed.
+
+**Direction and strengths** (chosen from val norms only; no behavioural input):
+- depth 40 only -- the val-selected depth (D010). Not 56, whatever its OOD AUROC.
+- `sigma_val = 17.18` = SD of the frozen depth-40 score on val.
+- beta conditions at `ds` in {-2, -1, 0, +1, +2} * sigma_val.
+- ONE fixed seeded raw-space direction orthogonal to beta, matched in ||dh||, at
+  -2 and +2 only. Seven conditions total. No 0.5-SD condition.
+
+**Schedule:** sustained newest-token. At prefill the edit is applied to the final
+real prefix token at block-39 output; during decoding it is applied to each newly
+generated token's block-39 state before it propagates through the upper 24 blocks.
+
+**Generation:** released settings -- temperature 0.7, pure sampling. All 86 `test`
+prefixes, no subset selection. 4 stochastic continuations per prefix per condition.
+Max 60 generated tokens. Seeds derived deterministically from (prefix, replicate)
+and reused across all seven conditions (common random numbers). The replicate count
+is 4 and does not increase after results are seen.
+
+**Endpoints:** primary `Y = 1[</think> within 60 generated tokens]`. Also reported:
+termination in tokens 1-19 and in tokens 20-60 (the latter is the released YES
+window, `YES_TOKEN_MIN=20`, `YES_TOKEN_MAX=60`). Primary causal contrast
+`P(Y|+2beta) - P(Y|-2beta)`. Secondary: the full five-point dose response,
+`+beta` on released-NO prefixes, `-beta` on released-YES prefixes, tokens to
+termination, current `think_logprob` response, and the +-2 orthogonal controls.
+Note the released NO criterion (`</think>` after token 200 or absent) is NOT
+measurable under a 60-token cap; "no termination within 60" is a weaker proxy.
+
+**Inference:** aggregate replicates to a per-prefix rate first, then bootstrap
+`question_id` clusters carrying all prefixes and replicates of a resampled question
+together; paired resamples for between-condition deltas (D006 philosophy).
+
+**Baseline validation:** the unsteered condition is reported alongside, so it is
+visible whether the generation protocol qualitatively recovers the released YES/NO
+distinction. No numerical threshold is invented afterwards. If baseline generation
+is inconsistent with the released labels, that is a protocol mismatch and no causal
+claim is made.
+
+**Mandatory propagation checks (Stage 1, on val examples only):** the depth-40 probe
+score shifts by the requested `ds`; the depth-64 state changes above numerical
+noise; final logits change above numerical noise. The change in current
+`think_logprob` is recorded as a termination-specific diagnostic and is explicitly
+**not** a continuation gate -- R002 established that one-step stop hazard and
+termination tens of tokens later are not the same quantity.
+
+**Interpretation, asymmetric and frozen:**
+- `+beta` raises stopping, `-beta` suppresses it, roughly monotone in strength,
+  orthogonal controls small, coherence intact -> strong positive result.
+- `think_logprob` moves but sustained stopping does not -> informative: manipulating
+  the local output precursor is insufficient to control longer-horizon termination.
+- downstream states/logits change but neither `think_logprob` nor stopping does ->
+  weak negative only. Do NOT sell this as "decodable =/= causal".
+- no downstream propagation, or obvious degeneration -> infrastructure failure or an
+  invalid intervention at that strength. No scientific result.
+
+**Not tunable after observing steering behaviour:** layer, strength, schedule,
+replicate count, orthogonal seed.
+
+**Aborts:** `test` is untouched until D013 and the implementation are frozen; Stage-1
+smoke uses val examples only. ~60 active minutes of engineering on
+hooks/cache/generation; if it becomes a rabbit hole, abort R007 and write R001-R006.
+The test run happens exactly once.
+
+Reason:
+A positive result supplies the causal evidence the project lacks. A null is weak on
+its own, which is precisely why the propagation checks and the orthogonal control are
+mandatory rather than optional -- they are what makes a null interpretable at all.
+
+Revisit if:
+Never. After R007 the experimental phase is closed.

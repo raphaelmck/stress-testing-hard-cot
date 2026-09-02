@@ -1,0 +1,63 @@
+{
+  "run_id": "r007_steering_preflight",
+  "kind": "feasibility preflight -- no GPU, no behavioural outcome, no experiment",
+  "depth": 40,
+  "frozen_fit_reproduced": {
+    "max_abs_diff": 1.430511474609375e-05,
+    "relative": 1.9959110966908753e-07,
+    "selected_C": 10.0
+  },
+  "beta_raw": {
+    "norm": 7.849182350220194,
+    "hidden": 5120,
+    "derivation": "beta_raw[j] = coef_[j] / scaler.scale_[j]"
+  },
+  "edit_identity_check": {
+    "requested_ds": 1.0,
+    "max_abs_err": 1.220947016022933e-05,
+    "max_rel_err": 1.7035177564145164e-07
+  },
+  "val_score": {
+    "sd": 17.17755126953125,
+    "mean": 15.000335693359375,
+    "min": -22.2159481048584,
+    "max": 64.00582885742188,
+    "n": 72
+  },
+  "val_residual_norm": {
+    "median": 172.26956176757812,
+    "p90": 186.0580291748047,
+    "max": 219.1199951171875
+  },
+  "candidates": [
+    {
+      "ds_in_val_sd": 0.5,
+      "ds": 8.588775634765625,
+      "norm_delta_h": 1.0942255194930823,
+      "ratio_median": 0.00635182810947299,
+      "ratio_p90": 0.006622401066124439,
+      "ratio_max": 0.007050572894513607,
+      "ratio_min": 0.004993727430701256
+    },
+    {
+      "ds_in_val_sd": 1.0,
+      "ds": 17.17755126953125,
+      "norm_delta_h": 2.1884510389861647,
+      "ratio_median": 0.01270365621894598,
+      "ratio_p90": 0.013244802132248878,
+      "ratio_max": 0.014101145789027214,
+      "ratio_min": 0.009987454861402512
+    },
+    {
+      "ds_in_val_sd": 2.0,
+      "ds": 34.3551025390625,
+      "norm_delta_h": 4.376902077972329,
+      "ratio_median": 0.02540731243789196,
+      "ratio_p90": 0.026489604264497757,
+      "ratio_max": 0.028202291578054428,
+      "ratio_min": 0.019974909722805023
+    }
+  ],
+  "verdict": "attractive: a 1-val-SD edit is a few percent of the residual norm",
+  "note": "magnitudes are expressed in SDs of the frozen depth-40 score on val, the split already used for selection; test is not used here and no steering outcome informed any number above"
+}

@@ -1,0 +1,8 @@
+{
+  "run_id": "r007_steering_preflight",
+  "commit": "1c9d1b8-dirty",
+  "upstream_data_commit": "4482324b5",
+  "started_utc": "2026-09-02T03:11:17Z",
+  "host": "cn-f001.server.mila.quebec",
+  "command": "src/steering_preflight.py"
+}
