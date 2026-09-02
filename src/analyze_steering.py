@@ -93,3 +93,30 @@ for c in order:
     same=sum(1 for r in rows if r['condition']==c and base[(r['filename'],r['replicate'])]==r['think_pos'])
     tot=sum(1 for r in rows if r['condition']==c)
     print(f"  {c:8s} same think_pos as baseline: {same}/{tot} = {same/tot:.1%}")
+
+# ---- figure 3: dose response with matched-norm orthogonal control ----
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(6.6, 4.2))
+xs = [-2, -1, 0, 1, 2]
+bs = [res[f"beta{k:+d}".replace("+0", "+0")][0] for k in xs]
+lo = [res[f"beta{k:+d}"][1] for k in xs]; hi = [res[f"beta{k:+d}"][2] for k in xs]
+ax.errorbar(xs, bs, yerr=[np.array(bs)-np.array(lo), np.array(hi)-np.array(bs)],
+            marker="o", ms=7, lw=2, capsize=4, color="#2E6DB4",
+            label="probe direction $\\beta$")
+ox = [-2, 2]; obs_ = [res["ortho-2"][0], res["ortho+2"][0]]
+olo = [res["ortho-2"][1], res["ortho+2"][1]]; ohi = [res["ortho-2"][2], res["ortho+2"][2]]
+ax.errorbar(ox, obs_, yerr=[np.array(obs_)-np.array(olo), np.array(ohi)-np.array(obs_)],
+            marker="s", ms=7, lw=0, elinewidth=2, capsize=4, color="#E08A1E",
+            label="matched-norm orthogonal control")
+ax.axhline(res["beta+0"][0], color="0.6", ls=":", lw=1, zorder=0)
+ax.set_xticks(xs); ax.set_xlabel("edit size (validation SDs of the frozen probe score)")
+ax.set_ylabel("P(</think> within 60 generated tokens)")
+ax.set_title("R007: steering the frozen depth-40 direction\n"
+             "86 test prefixes x 7 conditions x 4 continuations, question-clustered CIs",
+             fontsize=10)
+ax.legend(fontsize=8, loc="lower right", framealpha=0.95)
+ax.grid(axis="y", color="0.9", lw=0.7); ax.set_axisbelow(True)
+for side in ("top", "right"): ax.spines[side].set_visible(False)
+fig.tight_layout(); fig.savefig("artifacts/figures/r007_steering_dose.png", dpi=160)
+print("wrote artifacts/figures/r007_steering_dose.png")
