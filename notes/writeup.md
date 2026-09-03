@@ -1,100 +1,120 @@
-# What does linear decodability of reasoning termination actually establish?
+# What Does a Reasoning-Termination Probe Actually Know?
 
-A reproduction and falsification study of Hard-CoT Task 1 on Qwen3-32B.
-
----
-
-## 1. Overview
-
-Simple linear probes on Qwen3-32B hidden states predict whether the model is about to
-close its chain of thought with `</think>`, and they do so across domains. We reproduce
-that result and then spend the rest of the project trying to break it.
-
-The reproduction holds. The obvious deflationary explanations do not account for it. But
-two further results limit what the headline number can be said to establish, and they
-point in opposite directions from each other:
-
-- On held-out **in-domain** data, the probe carries information that neither the model's
-  immediate propensity to emit `</think>` nor the raw length of the prefix explains.
-- On the released **cross-domain** split, absolute prefix length is nearly perfectly
-  predictive *within* a question while being weak when pooled across questions. The
-  released builders balance length globally, in 500-token buckets, which does not
-  constrain that conditional association. So the split's high AUROC does not by itself
-  demonstrate transfer independent of question-conditional reasoning progress.
-- A predeclared steering intervention along the frozen probe direction did not produce
-  direction-specific control of termination. An equal-norm orthogonal perturbation
-  produced a comparable behavioural change.
-
-The summary claim: **strong, reliable decodability is established; a transferable causal
-termination representation is not.** Each of those two halves is load-bearing.
-
-Everything below comes from seven preregistered runs on a frozen protocol. Hypotheses,
-evaluation depths, the regularisation grid, and the split roles were fixed before the
-first activation was extracted; every subsequent design choice that could have tilted a
-comparison was written down before the run that used it.
+*Reproducing and stress-testing Hard-CoT Task 1 on Qwen3-32B*
 
 ---
 
-## 2. Motivation and hypotheses
+## Executive summary
 
-Recent Hard-CoT interpretability work reports that linear probes on Qwen3-32B activations
-predict imminent termination with >0.90 OOD AUROC. Separately, causal analysis of Qwen3
-suggests the actual stopping mechanism is high-dimensional and concentrated in late
-computation — not a single residual-stream direction. That tension is the motivating
-puzzle: why is termination so linearly decodable if the causal mechanism is not itself
-one-dimensional?
+Simple linear probes predict whether Qwen3-32B will soon terminate its chain of thought,
+including on a held-out domain. I reproduced this result — **OOD AUROC 0.904 at the
+validation-selected layer** — and then asked what, if anything, that performance tells us
+about the model's underlying termination mechanism.
 
-Three explanations were frozen before any data was seen:
+**Two simple explanations account for only part of the signal.** The model's current
+log-probability of emitting `</think>` reaches 0.807 OOD AUROC on its own but
+substantially underperforms the activation probe (paired advantage +0.214 on test), and it
+is essentially uncorrelated with the proxy labels the probe was trained on. Raw prefix
+length also fails on the better-powered held-out test set: within a question the
+activation probe reaches 0.874 concordance versus 0.494 for length, and it stays at 0.914
+on the pairs where the positive prefix is actually *shorter* than the negative.
 
-- **H0, output-proximal.** The probe is largely reading information already present in
-  the model's next-token distribution, especially its propensity to emit `</think>`.
-- **H1, broader latent state.** Activations carry domain-general information about a
-  reasoning state associated with imminent termination that is not reducible to that
-  propensity.
-- **H2, proxy/dataset structure.** Training and evaluation share correlates of "being
-  near a conclusion" that make termination predictable without corresponding to a unified
-  latent termination state.
+**The cross-domain result is harder to interpret.** In the released OOD math split, pooled
+length is only weakly predictive (AUROC 0.587), while within the same question it orders
+positive above negative prefixes at 0.938 concordance — exactly matching the activation
+probe. Inspecting the released builders showed global 500-token length balancing but no
+explicit within-prompt length-matching step in the code paths I read. So the high OOD
+AUROC does not by itself establish that the decoded signal transfers independently of
+question-relative reasoning progress.
 
-A methodological commitment came with them: linear decodability is never to be described
-as causal use without an intervention, and no probe vector is to be called "the
-termination direction."
+**Finally, I intervened causally** along the frozen validation-selected probe direction.
+The generation protocol reproduced the behavioural labels, the intervention propagated
+downstream and preserved coherent output, but ±1–2 SD steering produced no
+direction-specific or monotonic control of termination; an equal-norm orthogonal direction
+produced a comparable effect. On benchmark-negative prefixes, +2 SD steering caused **0 of
+172** terminations.
+
+My conclusion is deliberately narrower than "the probe found a termination mechanism":
+**strong and transferable decodability is reproducible, but these experiments do not
+identify a transferable causal termination representation.** The value is in mapping where
+increasingly strong interpretations of an impressive probe result do and do not survive
+falsification.
+
+### Results at a glance
+
+| Within-question comparison | Held-out `test` | Cross-domain `ood_test` |
+|---|---|---|
+| Activation probe (depth 40) | **0.874** | **0.938** |
+| Prefix length | **0.494** | **0.938** |
+| Interpretation | Probe clearly beats length | Evaluation cannot separate probe from progress/length |
+
+**The apparent tension here is the main finding, not a contradiction: the strongest
+positive control is in-domain, while the strongest identification limitation is
+cross-domain.**
+
+Three takeaways:
+
+- The phenomenon is real and reproduces cleanly at a validation-selected layer.
+- Immediate stopping propensity and raw length explain part of it, not the whole of it.
+- Neither the released OOD evaluation nor a controlled steering test supports the stronger
+  claim that a transferable causal termination representation has been identified.
 
 ---
 
-## 3. Data and protocol
+## 1. The puzzle, and what would have changed my mind
 
-Task 1 of the released `cot-proxy-tasks` repository, pinned at commit `4482324`. The
-subject model is `Qwen/Qwen3-32B` at revision `9216db5`, run in bf16 on a single
-A100-80GB.
+Hard-CoT reports that linear probes on Qwen3-32B activations predict imminent `</think>`
+with >0.90 OOD AUROC. Separately, causal analysis of Qwen3 suggests the stopping mechanism
+is high-dimensional and concentrated in late computation, not a single residual direction.
+If that is right, why is termination so linearly decodable?
 
-One dataset property drives much of what follows. The **training** labels are cheap
-distance proxies: positives are prefixes 25–55 words from the end of an existing CoT,
-negatives 300+ words. The **evaluation** labels are behavioural: 50 continuations are
-resampled per prefix, and a positive requires `</think>` to appear at token index 20–60.
-These are not the same target, and the project never treats them as equivalent.
+After the initial dataset audit, and before examining any activation-probe result, I wrote
+down three competing explanations:
 
-Inputs are built with the released `build_thinking_prompt` helper — the original user
-prompt, the Qwen chat/thinking template, then the released prefix — and the activation is
-taken at the **last real token of the prefix**. No truncation. The prompt construction was
-re-verified on the cluster before extraction, because the chat template is jointly
-determined by the transformers version and the model revision.
+- **Output-proximal:** the probe mostly reads information already in the next-token
+  distribution, especially `</think>` propensity.
+- **Latent state:** activations carry domain-general information about a reasoning state
+  associated with imminent termination, not reducible to that propensity.
+- **Proxy/dataset structure:** training and evaluation share correlates of "being near a
+  conclusion" that make termination predictable without a unified latent state.
 
-Evaluation hygiene, frozen in advance: train on `train`; select the regularisation
-constant and the layer on `val` only; `test` is the in-domain check; `ood_test` is the
-final cross-domain check and is never tuned on. Depths **8, 24, 40, 56, 64** and the grid
-`C ∈ {0.01, 0.1, 1, 10}` were predeclared. Because `ood_test` is 58 rows from only 32
-questions — 16 of which contribute both a positive and a negative — every confidence
-interval bootstraps **question clusters**, not rows, and every method comparison uses a
-**paired** bootstrap on identical resampled clusters.
+The initial hypotheses, split roles, probe layers and regularisation grid were fixed before
+examining activation results. Subsequent controls were chosen **adaptively** in response to
+earlier findings; for each, the important analysis choices and interpretation criteria were
+recorded before inspecting that experiment's outcome. That sequence — and the two places it
+forced me to reverse a conclusion — is the substance of what follows.
+
+I also committed to two rules: linear decodability would never be described as causal use
+without an intervention, and no probe vector would be called "the termination direction."
 
 ---
 
-## 4. Claim 1 — Strong termination decodability reproduces
+## 2. Setup
 
-Extracting activations for 4,216 rows (4,000 balanced training rows spanning 779
-questions, plus all of val/test/ood_test) and fitting L2 logistic probes gives:
+Task 1 of the released `cot-proxy-tasks` benchmark, subject model `Qwen/Qwen3-32B`.
 
-| depth | val AUROC | test AUROC | OOD AUROC [95% CI] |
+One dataset property drives much of the analysis. **Training labels are cheap distance
+proxies** — positives are prefixes 25–55 words from the end of an existing CoT, negatives
+300+ words. **Evaluation labels are behavioural** — 50 continuations are resampled per
+prefix, and a positive requires `</think>` at token index 20–60. These are not the same
+target, and I never treat them as equivalent.
+
+Probes are L2 logistic regressions on the activation at the last real token of the prefix,
+at five predeclared depths (8, 24, 40, 56, 64). Training uses `train` only; the
+regularisation constant and the layer are selected on `val` only; `test` is the in-domain
+check; `ood_test` is the final cross-domain check and is never tuned on. Because `ood_test`
+is 58 rows from 32 questions, every interval bootstraps **question clusters**, and every
+method comparison uses a **paired** bootstrap on identical resampled clusters. Exact model
+revision, prompt construction, and reproduction details are in the appendix.
+
+---
+
+## 3. The probe result reproduces
+
+Fitting the frozen protocol on 4,216 rows (4,000 balanced training rows from 779 questions
+plus all evaluation splits):
+
+| depth | val | test | OOD [95% CI] |
 |---|---|---|---|
 | 8 | 0.625 | 0.706 | 0.699 [0.563, 0.820] |
 | 24 | 0.725 | 0.795 | 0.832 [0.725, 0.924] |
@@ -102,208 +122,156 @@ questions, plus all of val/test/ood_test) and fitting L2 logistic probes gives:
 | 56 | 0.896 | 0.965 | 0.964 [0.899, 1.000] |
 | 64 | 0.844 | 0.907 | 0.892 [0.806, 0.961] |
 
-The **primary, non-leaky result is depth 40**: it is the depth validation selects, and its
-OOD AUROC is **0.904 [0.834, 0.966]**. Depth 56 reaches 0.964, but that is the *maximum
-over the five predeclared depths*, identified by looking at OOD, and it is reported here
-only descriptively. Every subsequent comparison in this project uses depth 40, so that a
-val-selected probe is never being compared against a val-selected baseline on unequal
-terms.
+*(Figure 1: `reproduction_layer_auroc.png`)*
 
-Three of five predeclared depths clear 0.89 OOD, so the phenomenon is not an artifact of a
-lucky layer. Signal rises through the network, peaks at depth 56, and falls back at the
-final depth. We record that shape but do not lean on it: the 56-vs-64 gap is 0.072 against
-intervals this wide, and representations can reorganise between layers while the LM head
-preserves the relevant information.
+**The primary result is depth 40 — the depth validation selects — at OOD 0.904.** Depth 56
+reaches 0.964, but that is the maximum over the five predeclared depths, identified by
+looking at OOD, and I report it descriptively only. Every later comparison uses depth 40,
+so a val-selected probe is never compared against a val-selected baseline on unequal terms.
 
-Two facts constrain how much this table can carry on its own. Train AUROC saturates at
-1.000 at four of five depths — the distance-based training labels are trivially separable,
-so the probe is fit on an easier problem than the one it is scored on. And `val` is both
-the noisiest-label split and the selection split, which is why val sits below test and OOD
-throughout.
+Three of five depths clear 0.89 OOD, so this is not a lucky-layer artifact. Two facts
+temper the table: train AUROC saturates at 1.000 at four depths, because the
+distance-based training labels are trivially separable, and `val` is both the noisiest
+split and the selection split.
 
 ---
 
-## 5. Claim 2 — Simple output and length explanations are insufficient
+## 4. Simple output and length cues explain only part of the probe
 
-### Immediate stopping propensity
+During the same forward pass I cached last-token output statistics and embargoed them until
+the reproduction was committed. Used directly as scores:
 
-During the same forward pass we cached last-token output statistics — the `</think>`
-logit, its log-probability, the logit margin, next-token entropy, top-1 identity and
-log-probability — and embargoed them until the reproduction was committed. Fitting them
-under the identical protocol:
-
-| baseline | test AUROC | OOD AUROC |
+| baseline | test | OOD |
 |---|---|---|
 | activation probe, depth 40 | 0.909 | 0.904 |
-| `think_logprob`, used directly as a score | 0.695 | 0.807 |
+| `think_logprob` | 0.695 | 0.807 |
 | `think_margin` | 0.684 | 0.803 |
 | `think_logit` | 0.601 | 0.577 |
-| multivariate output-only (L2 logistic) | 0.561 | 0.727 |
 
-A single untrained scalar — the log-probability the model assigns to `</think>` at the
-next position — recovers much of the distance from chance. The paired question-clustered
-delta against the depth-40 probe is **+0.214 [+0.091, +0.311]** on test and
-**+0.096 [+0.000, +0.201]** on OOD. So the output-proximal story is a real part of the
-picture and is not the whole of it.
+The paired question-clustered advantage of the probe over `think_logprob` is **+0.214
+[+0.091, +0.311]** on test and +0.096 [+0.000, +0.201] on OOD.
 
-Two structural facts sharpen this. First, the argmax next token is **never** `</think>` in
-any of the 4,216 rows, and mean p(`</think>`) at the next position is ~2e-12: whatever
-`think_logprob` contributes is the ordering of a far distributional tail, not the model
-being about to stop. Second, **every output feature is at chance on the training
-distribution** (AUROC 0.495–0.508) while reaching 0.77–0.81 on evaluation splits. Being 40
-words from the end says almost nothing about the very next token. The probe therefore
-cannot have learned "current `</think>` propensity" from its training labels — it was
-trained on labels uncorrelated with that quantity. This also handicaps the multivariate
-output baseline, which is fit on train where its features carry no signal and consequently
-lands *below* the untrained scalar; the honest strong output baseline here is
-`think_logprob` alone.
-
-### Absolute prefix length
-
-Length is the other cheap explanation. On held-out `test`, comparing every within-question
-YES/NO pair (17 questions, 137 pairs), and macro-averaging within question then across
-questions:
-
-| score | within-question concordance [95% CI] |
-|---|---|
-| depth-40 activation probe | **0.874 [0.727, 0.977]** |
-| `think_logprob` | 0.794 [0.664, 0.908] |
-| `token_length` | **0.494 [0.321, 0.667]** |
-
-Length is at chance. The paired delta, activation minus length, is
-**+0.137 to +0.605**, P(Δ>0) = 0.998. The decisive subset is the **52 pairs where the
-positive prefix is *shorter* than the negative**: there the probe is still correct
-**0.923** of the time (macro 0.914 [0.814, 1.000]), beating chance on 12 of 14 questions,
-while `think_logprob` falls to 0.635. On near-matched pairs — thresholds |Δlen| ≤ 100 and
-≤ 250 frozen before the run — the probe scores **0.983** and **0.986**, against 0.567 and
-0.707 for `think_logprob`.
-
-### Linear nuisance control
-
-Finally, a **score-level** control: regress the frozen depth-40 score on standardised
-`token_length` and `think_logprob`, fitting on `val` only and using no labels, then apply
-the frozen coefficients to `test`.
-
-| score on test | pooled AUROC [95% CI] | within-question |
-|---|---|---|
-| raw depth-40 | 0.909 [0.835, 0.966] | 0.874 |
-| joint residual | **0.831 [0.716, 0.928]** | 0.818 |
-| length-only residual | 0.882 [0.779, 0.954] | 0.918 |
-| think-only residual | 0.841 [0.717, 0.934] | 0.868 |
-
-The nuisances explain R² = 0.334 of the score on val, and removing both costs 0.077 AUROC
-— paired delta +0.077 **[−0.006, +0.173]**, an interval that includes zero. Nearly all the
-cost is `think_logprob`; removing length alone costs 0.027 and *raises* within-question
-concordance to 0.918.
-
-**What this supports:** absolute length and current stop propensity explain some of the
-structure and do not account for the held-out probe result. **What it does not support:**
-that the surviving signal is a termination-specific representation. This is a linear,
-marginal control on one scalar. A residual that survives it can still be a nonlinear
-function of the same nuisances, and nothing was projected out of the 5,120-dimensional
-activation.
+Two structural facts matter more than the table. The argmax next token is **never**
+`</think>` in any of the 4,216 rows and mean p(`</think>`) is ~2e-12, so this feature is the
+ordering of a far distributional tail, not the model being about to stop. And every output
+feature is at chance on the *training* distribution (AUROC 0.495–0.508) while reaching
+0.77–0.81 on evaluation splits. The training labels provide essentially no marginal signal
+about current `</think>` propensity, making a simple account in which the probe merely
+learns that quantity unlikely.
 
 ---
 
-## 6. Claim 3 — The OOD evaluation does not cleanly identify progress-independent transfer
+## 5. What surprised me: an OOD conditional-length association
 
-The preregistered within-question control on `ood_test` — 16 questions carry both labels,
-holding prompt, domain and often the already-obtained answer fixed — produced the result
-that redirected the project:
+I expected the main question to be whether the probe merely decoded immediate stopping
+propensity. The result above weakened that. The bigger surprise came from a control I had
+registered in advance: within the 16 `ood_test` questions that carry both a positive and a
+negative prefix — holding prompt, domain, and often the already-obtained answer fixed —
 
-| score | macro within-question concordance | questions with positive Δ |
+| score | macro within-question concordance | questions positive |
 |---|---|---|
-| depth-40 activation probe | 0.938 [0.812, 1.000] | 15/16 |
+| activation probe, depth 40 | 0.938 [0.812, 1.000] | 15/16 |
 | `think_logprob` | 0.844 [0.656, 1.000] | 13/16 |
-| **`token_length`** | **0.938 [0.844, 1.000]** | **16/16** |
+| **prefix length** | **0.938 [0.844, 1.000]** | **16/16** |
 
-The probe separates within question — 15 of 16, two-sided binomial p = 0.0005 — so the OOD
-result is not merely between-question topic structure. But raw length matches it exactly
-(paired delta 0.000 [−0.188, +0.125]) and is positive in *every* question, with a mean
-within-question gap of **+432 tokens**.
+The probe separates within question (15/16, p = 0.0005), so the OOD result is not merely
+topic structure. But raw length matched it exactly, positive in every question, with a mean
+within-question gap of **+432 tokens**. I initially thought this collapsed the whole result
+into a length shortcut.
 
-Reading the three released v8 builders directly explains how that coexists with a
-length-balanced benchmark. They apply a global length filter to [500, 3000), balance class
-counts *per prompt* by label quality (`mean_yes_position`, `no_count` — never by length),
-and then balance token length in **global 500-token buckets**. No step in any of the three
-compares a positive item's length against a negative item's from the same prompt. The
-skew was known — one step is commented "remove majority-class excess per bucket to
-eliminate the systematic length skew (no→short, yes→long)" — and the correction is applied
-globally.
+That surprise sent me to the released builders rather than to another model. In the code
+paths I inspected, all three apply a global length filter, balance class counts *per
+prompt* by label quality (never by length), then balance token length in **global 500-token
+buckets**; I found no explicit within-prompt length-matching step. The skew was known — one
+step is commented "remove majority-class excess per bucket to eliminate the systematic
+length skew (no→short, yes→long)" — and the correction is global.
 
 **Global 500-token bucket balancing does not constrain within-prompt or within-bucket
-label–length differences, so a substantial conditional skew can survive despite good
-global balance.** The released bucket tables confirm the global balance holds. A
-deterministic toy example makes the arithmetic concrete: one long question contributing 1
-positive and 3 negatives, one short question contributing 3 positives and 1 negative,
-gives pooled length AUROC 0.438 with within-question concordance 1.000. Unequal
-per-question class counts across different length scales suffice.
+label–length differences, so a substantial conditional skew can survive despite good global
+balance.** A toy construction shows that this pooled-versus-conditional discrepancy can
+arise even when pooled length appears balanced; it is intuition, not evidence that this
+mechanism caused the observed OOD skew.
 
-**This is split-specific and must be stated as such:**
+*(Figure 2: `r005_length_balance.png`)*
 
-| split | pooled length AUROC | within-question length concordance | depth-40 probe |
+| split | pooled length AUROC | within-question length | probe |
 |---|---|---|---|
 | val | 0.450 | 0.653 | 0.907 |
 | test | 0.499 | **0.494** | 0.874 |
 | ood_test | 0.587 | **0.938** | 0.938 |
 
-The conditional association appears in `ood_test` and not in `test`. And `ood_test` — 31
-pairs from 16 mostly one-versus-one questions — is the split with the least data to
-establish it.
-
-The supportable conclusion: **high pooled OOD AUROC on this released split does not by
-itself establish transfer independently of question-conditional reasoning progress.** Not
-supported, and contradicted by Claim 2: that the benchmark is broken, that the probe is a
-length detector, or that length explains the published result generally.
+**This is split-specific.** The conditional association appears in `ood_test` and not in
+`test` — and `ood_test`, 31 pairs from 16 mostly one-versus-one questions, is the split with
+the least data to establish it. The supportable statement: *the released OOD split does not
+let this analysis distinguish domain-general termination information from question-conditional
+reasoning progress as cleanly as its pooled length balance suggests.*
 
 ---
 
-## 7. Claim 4 — The decoded direction is not a specific causal control direction under our intervention
+## 6. The critical falsification: the probe is not a length detector
 
-Everything above is correlational. The final experiment intervenes.
+The obvious next inference — "the probe is reading length" — is the one I tested next, on
+`test` rather than `val`, because depth 40 was selected on `val`. Across 17 questions and
+137 within-question pairs:
 
-The frozen depth-40 probe was recovered in raw activation coordinates
-(`β[j] = coef_[j] / scaler.scale_[j]`, ‖β‖ = 7.849) after verifying that a deterministic
-refit reproduces the committed scores to 2.0e-7 relative. The edit
-`δh = (Δs/‖β‖²)·β` moves the frozen score by exactly `Δs`. Magnitudes were chosen from the
-**validation** score distribution (σ = 17.18) before any behaviour was observed; a 2-SD
-edit is **2.6%** of the depth-40 residual norm. The intervention is applied to the final
-real prefix token at prefill and to every newly generated token thereafter. Seven
-conditions — β at −2/−1/0/+1/+2 SD, plus one fixed seeded matched-norm **orthogonal**
-direction at ±2 — across all 86 test prefixes, 4 continuations each, temperature 0.7,
-60-token cap, with seeds shared across conditions so every condition sees identical random
-draws. 2,408 generations.
+- probe **0.874 [0.727, 0.977]**; `think_logprob` 0.794; **length 0.494 [0.321, 0.667]**;
+  paired advantage of probe over length **+0.137 to +0.605**, P(Δ>0) = 0.998.
+- On the **52 pairs where the positive prefix is shorter**, the probe is still right
+  **0.923** of the time (macro 0.914 [0.814, 1.000]), beating chance on 12 of 14 questions,
+  while `think_logprob` falls to 0.635.
+- On near-matched pairs (thresholds |Δlen| ≤ 100 and ≤ 250, frozen before the run) the probe
+  scores **0.983** and **0.986**.
+
+So the OOD tie with length does not generalise, and the naive "probe = length" story is
+falsified where the comparison has power.
+
+As a secondary robustness check, I fit on validation a linear nuisance model predicting the
+frozen probe score from prefix length and current `</think>` log-probability (R² = 0.334).
+Applying that frozen correction to `test` reduces AUROC from 0.909 to **0.831 [0.716,
+0.928]**. Length alone accounts for little of the drop (residual 0.882); most is associated
+with `think_logprob` (0.841). Because this operates only on the scalar probe score and only
+linearly, I treat it as evidence that these nuisances matter, not as removal of nuisance
+information from the representation. (Full table in the appendix.)
+
+---
+
+## 7. Steering the decoded direction
+
+Everything above is correlational. The last experiment intervenes, with the design frozen
+in advance.
+
+I recovered the frozen depth-40 probe in raw activation coordinates and verified that the
+edit `δh = (Δs/‖β‖²)·β` moves the probe score by exactly `Δs`. Magnitudes came from the
+**validation** score distribution before any behaviour was observed; a 2-SD edit is 2.6% of
+the depth-40 residual norm. The edit is applied to the final prefix token and to every newly
+generated token thereafter. Seven conditions — β at −2/−1/0/+1/+2 SD plus one fixed
+matched-norm **orthogonal** direction at ±2 — over all 86 test prefixes, 4 continuations
+each, temperature 0.7, 60-token cap, with random draws shared across conditions. 2,408
+generations.
 
 **Validity first.** Unsteered, the protocol reproduces the released labels: positives
-terminate within 60 tokens at **0.895** (0.866 inside the released 20–60 window),
-negatives at **0.000**. The edit lands at the requested score shift to **0.158%**, the
-depth-64 state moves ~2% of its norm, and generations remain coherent.
-
-**Behaviour:**
+terminate within 60 tokens at **0.895**, negatives at **0.000**. The edit lands to 0.158% of
+the requested score shift, the final-layer state moves ~2% of its norm, and output stays
+coherent.
 
 | β −2 | β −1 | β 0 | β +1 | β +2 | ⊥ −2 | ⊥ +2 |
 |---|---|---|---|---|---|---|
 | 0.439 | 0.436 | 0.448 | 0.459 | 0.453 | 0.442 | 0.459 |
 
-Primary contrast P(+2β) − P(−2β) = **+0.0145 [+0.0019, +0.0306]**. Matched orthogonal
-contrast = **+0.0174 [+0.0000, +0.0404]** — at least as large.
+- Primary contrast P(+2β) − P(−2β) = **+0.0145 [+0.0019, +0.0306]**
+- Matched orthogonal contrast = **+0.0174 [+0.0000, +0.0404]**
+- On benchmark-negative prefixes, +2β caused termination in **0 of 172** generations
 
-There is no meaningful monotonic dose response; an orthogonal perturbation of equal norm
-produces a comparable swing; 85–88% of steered continuations are token-identical to
-baseline under common random numbers; and on released-negative prefixes, where the model
-terminates within 60 tokens 0% of the time, +2σ steering produced termination in **0 of
-172** generations.
+**The small β-direction effect is not specific: an equal-norm orthogonal direction produces
+at least as large a change.** There is no monotonic dose response, and 85–88% of steered
+continuations are token-identical to baseline. *(Figure 3: `r007_steering_dose.png`)*
 
-**Despite strong linear decodability, sustained steering along the frozen depth-40 probe
-direction produced no direction-specific control of termination at the tested magnitudes.
-An equal-norm orthogonal perturbation produced a comparable behavioural change.**
-
-Limitations that bound this precisely: one direction, depth 40 only, one intervention
-schedule, edits up to 2.6% of the residual norm, and the immediate `think_logprob` channel
-did not move monotonically either. A different causal representation, layer, or
-intervention can exist. This result does not show that the probe is non-causal in general,
-does not prove that decodability fails to imply causality as a principle, and does not
-establish that termination is high-dimensional.
+Stated precisely: *despite strong linear decodability, sustained steering along the frozen
+depth-40 probe direction produced no direction-specific control of termination at the tested
+magnitudes.* This is one direction, one layer, one schedule, at edits up to 2.6% of the
+residual norm. It does not show the probe is non-causal in general, does not prove that
+decodability fails to imply causality as a principle, and does not establish that
+termination is high-dimensional.
 
 ---
 
@@ -311,49 +279,81 @@ establish that termination is high-dimensional.
 
 | claim | status |
 |---|---|
-| Termination is strongly linearly decodable, including cross-domain | **Established** (OOD 0.904 at the val-selected depth) |
-| Reducible to immediate `</think>` propensity | **No** — chance on the training distribution; probe leads by +0.214 on test |
+| Termination is strongly linearly decodable, including cross-domain | **Established** (OOD 0.904, val-selected depth) |
+| Reducible to immediate `</think>` propensity | **No** — at chance on the training distribution; probe leads by +0.214 on test |
 | More than between-question topic structure | **Yes** — 15/16 within-question on OOD, p = 0.0005 |
 | More than raw prefix length, in-domain | **Yes** — 0.874 vs 0.494; 0.914 where length is discordant |
-| Survives a linear control for length and stop propensity | **Yes, at a cost** — 0.909 → 0.831, interval includes zero |
+| Survives a linear nuisance control | **Yes, at a cost** — 0.909 → 0.831, interval includes zero |
 | Transfer independent of reasoning progress, cross-domain | **Not identifiable on the released OOD split** |
-| The decoded direction causally controls stopping | **No evidence** — and the null is itself weak |
+| The decoded direction causally controls stopping | **No evidence** — and this null is itself weak |
+
+These experiments do not establish that the decoded signal is a transferable causal
+termination representation. They also do not establish that no such representation exists.
 
 ---
 
-## 9. Limitations and the next experiment
+## 9. If I had one more day
 
-The largest limitations are structural rather than incidental. `ood_test` is 58 rows from
-32 questions and was deliberately inspected only three times; several intervals reach
-1.000 and no difference below ~0.05 AUROC is resolvable there. `test` is in-domain, so the
-strongest positive results — the length control and the nuisance control — establish
-in-domain behaviour, while the cross-domain claim rests on the split whose confound this
-project documents. Activations were cached in bf16 and depend mildly on batch composition.
-Every probe result is at one val-selected depth. And the steering null is bounded as
-described above.
+**I would rebuild the OOD evaluation so that positive and negative prefixes are matched
+within question on an online-available progress proxy, then rerun the frozen probe.** That
+directly tests the largest remaining uncertainty: whether the activation signal transfers
+cross-domain independently of reasoning progress. The proxy must not use the rollout's
+eventual total length, which is why I did not run it here.
 
-Two candidate next experiments, in order:
-
-1. **A progress control that does not use future information.** The natural competitor to
-   H1 is now "question-relative reasoning progress," not raw length. Constructing it
-   without leaking the rollout's eventual total length is the hard part and is why it was
-   not run here.
-2. **A representation-level nuisance projection and a larger or multi-layer intervention.**
-   The control in Claim 2 acts on a scalar; projecting nuisance subspaces out of the
-   activation, and steering with larger or distributed edits, are the two ways to convert
-   the current weak null into something stronger in either direction.
+Only if the signal survives that would I invest in stronger mechanistic interventions —
+projecting nuisance subspaces out of the representation rather than out of a scalar, and
+larger or multi-layer edits.
 
 ---
 
-## 10. Reproduction
+## Appendix
 
-All numbers come from committed run artifacts under `artifacts/runs/`, each with a
-`config.json` recording the model revision, sample hash, depths, and seed. The frozen
-sample is deterministic from seed 42 (`sha256` prefix `c261306dde08c8b9` for the full
-4,216-row worklist). The ledger in `RESULTS.md` is append-only and records, for every run,
-the interpretation *and* the evidence against it; `DECISIONS.md` records every design
-choice that could have tilted a comparison, with the date it was frozen relative to the
-run that used it.
+**Model and protocol.** `Qwen/Qwen3-32B` at revision `9216db5`, bf16, single A100-80GB.
+Upstream data pinned at commit `4482324`. Inputs use the released `build_thinking_prompt`
+helper (original prompt + Qwen thinking template + released prefix); the prompt string was
+re-verified on the cluster before extraction because the chat template depends jointly on
+the transformers version and model revision. No truncation. Activations are taken at the
+last real prefix token with right padding, verified against an unbatched forward pass. The
+frozen 4,216-row sample is deterministic from seed 42.
 
-Figures: `artifacts/figures/reproduction_layer_auroc.png` (Claim 1),
-`r005_length_balance.png` (Claim 3), `r007_steering_dose.png` (Claim 4).
+**Uncertainty.** All intervals are 2,000-replicate bootstraps resampling `question_id`
+clusters; single-label replicates are discarded rather than coerced. Condition and method
+comparisons resample identical clusters for both scores.
+
+**Nuisance control, full table (test).**
+
+| score | pooled AUROC [95% CI] | within-question |
+|---|---|---|
+| raw depth-40 | 0.909 [0.835, 0.966] | 0.874 |
+| joint residual | 0.831 [0.716, 0.928] | 0.818 |
+| length-only residual | 0.882 [0.779, 0.954] | 0.918 |
+| think-only residual | 0.841 [0.717, 0.934] | 0.868 |
+
+Paired delta raw − joint residual: +0.077 [−0.006, +0.173].
+
+**Steering diagnostics.** The mandatory propagation checks were: requested vs observed
+depth-40 score shift (0.158%), final-layer state change (~2% of norm), and logit change
+above noise. The last passed at exactly one bf16 ULP (0.250 in every non-zero condition), so
+the final-layer state change is the meaningful propagation evidence. The current
+`think_logprob` moved non-monotonically under β (−0.115 to +0.129), so this run does not
+provide a clean local-versus-future dissociation either. The 60-token cap cannot express the
+released negative criterion (`</think>` after token 200 or absent).
+
+**Run chronology.** R001 reproduction → R002 output baselines → R003 within-question OOD
+control → R004 length control on test → R005 builder audit → R006 nuisance control → R007
+steering. The append-only `RESULTS.md` ledger records, for each run, the interpretation *and*
+the evidence against it; `DECISIONS.md` records each design choice with the date it was
+frozen relative to the run that used it, including two entries where a result reversed the
+planned next experiment.
+
+**Tool use.** I used LLM coding agents heavily for implementation, experiment orchestration,
+and bookkeeping, and used LLMs as research sounding boards. I made the final
+experimental-design and interpretation decisions, reviewed the generated code and results,
+and repeatedly changed or rejected proposed analyses when I thought the inference was
+invalid. The repository contains the append-only decision/result ledger and all run
+artifacts.
+
+**Active project time: ~[FILL IN] hours**, excluding GPU queue and run time and generic
+cluster setup, consistent with the application's time-counting rules.
+
+**Repository:** `github.com/raphaelmck/nanda-w27-app`
