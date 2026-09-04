@@ -27,7 +27,6 @@ PROJECT_BRIEF  ->  DECISIONS  ->  RESULTS  ->  STATE  ->  artifacts/
 ```
 src/                    library code
 scripts/                entry points; scripts/new_run.sh stamps a run directory
-configs/                run configs
 artifacts/runs/<id>/    config.json, metrics.json, metadata.json, stdout.log
 artifacts/figures/      committed figures
 artifacts/tables/       committed tables

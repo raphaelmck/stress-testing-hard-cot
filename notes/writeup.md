@@ -1,6 +1,6 @@
 # What Does a Reasoning-Termination Probe Actually Know?
 
-*Reproducing and stress-testing Hard-CoT Task 1 on Qwen3-32B*
+*Stress-testing Hard-CoT Task 1 on Qwen3-32B*
 
 ---
 
@@ -14,8 +14,9 @@ about the model's underlying termination mechanism.
 **Two simple explanations account for only part of the signal.** The model's current
 log-probability of emitting `</think>` reaches 0.807 OOD AUROC on its own but
 substantially underperforms the activation probe (paired advantage +0.214 on test), and it
-is essentially uncorrelated with the proxy labels the probe was trained on. Raw prefix
-length also fails on the better-powered held-out test set: within a question the
+has essentially no marginal discriminative signal for the proxy labels the probe was trained
+on (AUROC ~ 0.5). Raw prefix length also fails on the better-powered held-out test set:
+within a question the
 activation probe reaches 0.874 concordance versus 0.494 for length, and it stays at 0.914
 on the pairs where the positive prefix is actually *shorter* than the negative.
 
@@ -35,7 +36,7 @@ produced a comparable effect. On benchmark-negative prefixes, +2 SD steering cau
 172** terminations.
 
 My conclusion is deliberately narrower than "the probe found a termination mechanism":
-**strong and transferable decodability is reproducible, but these experiments do not
+**strong cross-domain decodability is reproducible, but these experiments do not
 identify a transferable causal termination representation.** The value is in mapping where
 increasingly strong interpretations of an impressive probe result do and do not survive
 falsification.
@@ -55,7 +56,8 @@ cross-domain.**
 Three takeaways:
 
 - The phenomenon is real and reproduces cleanly at a validation-selected layer.
-- Immediate stopping propensity and raw length explain part of it, not the whole of it.
+- Immediate stopping propensity explains part of the signal; raw length does not explain
+  the held-out test result.
 - Neither the released OOD evaluation nor a controlled steering test supports the stronger
   claim that a transferable causal termination representation has been identified.
 
@@ -63,10 +65,11 @@ Three takeaways:
 
 ## 1. The puzzle, and what would have changed my mind
 
-Hard-CoT reports that linear probes on Qwen3-32B activations predict imminent `</think>`
-with >0.90 OOD AUROC. Separately, causal analysis of Qwen3 suggests the stopping mechanism
-is high-dimensional and concentrated in late computation, not a single residual direction.
-If that is right, why is termination so linearly decodable?
+Hard-CoT [1] reports that linear probes on Qwen3-32B activations predict imminent
+`</think>` with >0.90 OOD AUROC. Separately, recent causal work on smaller Qwen3 models
+argues that stopping is mediated by distributed late-layer verification computation rather
+than a single residual-stream direction [2]. If something like that holds here, why is termination
+so linearly decodable?
 
 After the initial dataset audit, and before examining any activation-probe result, I wrote
 down three competing explanations:
@@ -166,7 +169,8 @@ learns that quantity unlikely.
 I expected the main question to be whether the probe merely decoded immediate stopping
 propensity. The result above weakened that. The bigger surprise came from a control I had
 registered in advance: within the 16 `ood_test` questions that carry both a positive and a
-negative prefix — holding prompt, domain, and often the already-obtained answer fixed —
+negative prefix — holding the question, prompt and domain fixed, though the two prefixes
+generally come from different reasoning rollouts —
 
 | score | macro within-question concordance | questions positive |
 |---|---|---|
@@ -250,8 +254,8 @@ each, temperature 0.7, 60-token cap, with random draws shared across conditions.
 generations.
 
 **Validity first.** Unsteered, the protocol reproduces the released labels: positives
-terminate within 60 tokens at **0.895**, negatives at **0.000**. The edit lands to 0.158% of
-the requested score shift, the final-layer state moves ~2% of its norm, and output stays
+terminate within 60 tokens at **0.895**, negatives at **0.000**. The realized probe-score shift is within
+**0.158%** of the requested shift, the final-layer state moves ~2% of its norm, and output stays
 coherent.
 
 | β −2 | β −1 | β 0 | β +1 | β +2 | ⊥ −2 | ⊥ +2 |
@@ -280,7 +284,7 @@ termination is high-dimensional.
 | claim | status |
 |---|---|
 | Termination is strongly linearly decodable, including cross-domain | **Established** (OOD 0.904, val-selected depth) |
-| Reducible to immediate `</think>` propensity | **No** — at chance on the training distribution; probe leads by +0.214 on test |
+| Explained by immediate `</think>` propensity alone | **Not supported** — at chance on the training distribution; probe leads by +0.214 on test |
 | More than between-question topic structure | **Yes** — 15/16 within-question on OOD, p = 0.0005 |
 | More than raw prefix length, in-domain | **Yes** — 0.874 vs 0.494; 0.914 where length is discordant |
 | Survives a linear nuisance control | **Yes, at a cost** — 0.909 → 0.831, interval includes zero |
@@ -331,8 +335,8 @@ comparisons resample identical clusters for both scores.
 
 Paired delta raw − joint residual: +0.077 [−0.006, +0.173].
 
-**Steering diagnostics.** The mandatory propagation checks were: requested vs observed
-depth-40 score shift (0.158%), final-layer state change (~2% of norm), and logit change
+**Steering diagnostics.** The mandatory propagation checks were: realized vs requested
+depth-40 score shift (within 0.158%), final-layer state change (~2% of norm), and logit change
 above noise. The last passed at exactly one bf16 ULP (0.250 in every non-zero condition), so
 the final-layer state change is the meaningful propagation evidence. The current
 `think_logprob` moved non-monotonically under β (−0.115 to +0.129), so this run does not
@@ -355,5 +359,18 @@ artifacts.
 
 **Active project time: ~[FILL IN] hours**, excluding GPU queue and run time and generic
 cluster setup, consistent with the application's time-counting rules.
+
+**References.**
+
+[1] A. Ivanova, N. Tyagi, J. Engels, N. Nanda. *Test your best methods on our hard CoT
+interp tasks.* LessWrong / Alignment Forum, 2026.
+`lesswrong.com/posts/tDJWZLQNN7poqCwKa/test-your-fancy-methods-on-our-hard-cot-interp-tasks`
+— defines the partial-transcript / resampling termination task and the released splits used
+here.
+
+[2] S. Dutta. *The Termination Circuit (how reasoning models stop thinking).* LessWrong,
+2026. `lesswrong.com/posts/ajhzc6ktEKyFeJFBS/the-termination-circuit-how-reasoning-models-stop-thinking`
+— late-MLP verification gate, reported on Qwen3-1.7B; motivation for the puzzle here, not an
+established claim about Qwen3-32B.
 
 **Repository:** `github.com/raphaelmck/nanda-w27-app`
