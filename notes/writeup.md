@@ -266,8 +266,10 @@ coherent.
 - On benchmark-negative prefixes, +2β caused termination in **0 of 172** generations
 
 **The small β-direction effect is not specific: the tested equal-norm orthogonal direction
-produces at least as large a change.** There is no monotonic dose response, and 85–88% of steered
-continuations are token-identical to baseline. *Figure 3 (`report_fig3.png`): the orthogonal control is a single fixed matched-norm
+produces at least as large a change.** There is no monotonic dose response, and 85–88% of
+steered continuations are token-identical to baseline.
+
+*Figure 3 (`report_fig3.png`): the orthogonal control is a single fixed matched-norm
 direction. The axis starts at zero because the effects are ~1 point around a ~45% baseline.*
 
 Stated precisely: *despite strong linear decodability, sustained steering along the frozen
