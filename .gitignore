@@ -1,6 +1,10 @@
 # Upstream dataset clone — pinned by commit in DECISIONS.md D003, never committed
 cot-proxy-tasks/
 
+# Agent operating instructions -- kept locally, not part of the research record
+AGENTS.md
+CLAUDE.md
+
 # Cluster execution logs -- the scientific record is artifacts/runs/*/stdout.log
 slurm-*.out
 

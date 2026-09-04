@@ -1,9 +1,12 @@
-# Reasoning-termination probes — 20h research sprint
+# Stress-testing linear decodability of reasoning termination
 
-**Question:** what information makes reasoning termination linearly predictable across domains?
+**Question:** what does strong cross-domain linear decodability of reasoning termination
+actually establish about the underlying model state?
 
-Subject model `Qwen/Qwen3-32B`; canonical data is Task 1 of `Centrattic/cot-proxy-tasks`.
-Full scientific contract: [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md).
+Subject model `Qwen/Qwen3-32B`; data is Task 1 of `Centrattic/cot-proxy-tasks`.
+
+**Start here: [`notes/writeup.md`](notes/writeup.md)** — the report, four claims over seven
+runs. The scientific contract is [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md).
 
 ## Knowledge hierarchy
 
@@ -14,64 +17,58 @@ PROJECT_BRIEF  ->  DECISIONS  ->  RESULTS  ->  STATE  ->  artifacts/
 
 | File | Read it for | Mutability |
 |---|---|---|
+| [`notes/writeup.md`](notes/writeup.md) | the report | final |
 | [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md) | what the project is | stable, human-edited |
-| [`DECISIONS.md`](DECISIONS.md) | why we changed course; what is closed | append-only |
-| [`RESULTS.md`](RESULTS.md) | every quantitative finding | **append-only** |
-| [`STATE.md`](STATE.md) | where we are, the ONE next experiment | rewritten, <~100 lines |
-| [`AGENTS.md`](AGENTS.md) | operational rules for coding agents | as needed |
-
-`CLAUDE.md` is a one-line import of `AGENTS.md`. Agent instructions have exactly one home.
+| [`DECISIONS.md`](DECISIONS.md) | why the course changed; what is closed | append-only |
+| [`RESULTS.md`](RESULTS.md) | every quantitative finding, with the evidence against it | **append-only** |
+| [`STATE.md`](STATE.md) | where the project ended | rewritten |
 
 ## Layout
 
 ```
-src/                    library code
+src/                    library code, one module per experiment
 scripts/                entry points; scripts/new_run.sh stamps a run directory
 artifacts/runs/<id>/    config.json, metrics.json, metadata.json, stdout.log
-artifacts/figures/      committed figures
+artifacts/figures/      report_fig{1,2,3}.png are the report figures
 artifacts/tables/       committed tables
-notes/                  dataset audit, literature notes
-cot-proxy-tasks/        upstream clone @ 4482324 — gitignored, read-only
+notes/                  writeup, dataset audit, literature notes, GPU runbook
+cot-proxy-tasks/        upstream clone @ 4482324 -- gitignored, read-only
 ```
 
 ## Setup
 
-Environment is managed with [uv](https://docs.astral.sh/uv/); Python is pinned to 3.12
-in `.python-version` and dependencies are locked in `uv.lock`.
+Environment is managed with [uv](https://docs.astral.sh/uv/); Python is pinned to 3.12 in
+`.python-version` and dependencies are locked in `uv.lock`.
 
 ```bash
 uv sync                       # creates .venv from the lockfile
 uv run python src/inspect_task1.py
 ```
 
-The upstream data clone is not tracked by this repo. To recreate it:
+The upstream data clone is not tracked here. To recreate it:
 
 ```bash
 git clone https://github.com/Centrattic/cot-proxy-tasks.git
 git -C cot-proxy-tasks checkout 4482324b5e4a6277fa3bd544785cbd9875e11694
 ```
 
-On the cluster, clone this repo into `$SCRATCH` and follow
-[`notes/gpu_runbook.md`](notes/gpu_runbook.md) from step 1.
+## Reproducing the runs
 
-### Compute
+Two of the seven runs need a GPU: the activation extraction (R001) and the steering
+intervention (R007). Both used one A100-80GB on the Mila cluster --- `Qwen/Qwen3-32B` is
+65.5 GB in bf16 and the extractor aborts rather than offloading to CPU. Batch scripts are
+`scripts/r001_extract.sbatch` and `scripts/r007_steer.sbatch`; the pre-launch verification
+gates are in [`notes/gpu_runbook.md`](notes/gpu_runbook.md).
 
-`Qwen/Qwen3-32B` is 32.8B parameters, ~64 GB in bf16. It does **not** fit on the local
-48 GB Mac, and quantizing to fit would alter the activations under study. Local work is
-limited to analysis, probe fitting, and pipeline validation against a small Qwen3 model;
-the real extraction runs on a rented Linux GPU box. `uv.lock` resolves for both
-macOS/arm64 and Linux/x86_64, and on Linux the default PyPI torch wheel is CUDA-enabled,
-so the same `uv sync` works in both places.
+Everything else --- probe fitting, the output-level baselines, the within-question and
+length controls, the builder audit, the nuisance control, and all figures --- runs from the
+committed artifacts on a CPU:
 
-## Running R001 on a GPU
+```bash
+uv run python src/fit_task1_probe.py --run-id r001_qwen32b   # needs the activation cache
+uv run python src/audit_length_balance.py                    # committed data only
+uv run python src/make_report_figures.py                     # rebuilds the report figures
+```
 
-`Qwen/Qwen3-32B` needs an 80 GB card (65.5 GB in bf16). Compute is the **Mila
-cluster** -- `--gres=gpu:h100:1` or `--gres=gpu:a100l:1`. Full step-by-step runbook
-with the pre-launch verification gates: [`notes/gpu_runbook.md`](notes/gpu_runbook.md).
-Batch script: `scripts/r001_extract.sbatch`.
-
-## Working with agents
-
-Give a bounded ticket, not "continue the project". Template in
-[`notes/ticket_template.md`](notes/ticket_template.md). After every result, stop and decide
-what uncertainty was actually reduced before launching the next agent.
+The ~210 MB activation cache under `artifacts/runs/r001_qwen32b/activations/` is
+gitignored; the per-row scores derived from it are committed.
