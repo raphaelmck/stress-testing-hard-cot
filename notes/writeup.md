@@ -55,7 +55,8 @@ cross-domain.**
 
 Three takeaways:
 
-- The phenomenon is real and reproduces cleanly at a validation-selected layer.
+- The reported cross-domain decoding performance reproduces cleanly at a validation-selected
+  layer.
 - Immediate stopping propensity explains part of the signal; raw length does not explain
   the held-out test result.
 - Neither the released OOD evaluation nor a controlled steering test supports the stronger
@@ -132,10 +133,10 @@ reaches 0.964, but that is the maximum over the five predeclared depths, identif
 looking at OOD, and I report it descriptively only. Every later comparison uses depth 40,
 so a val-selected probe is never compared against a val-selected baseline on unequal terms.
 
-Three of five depths clear 0.89 OOD, so this is not a lucky-layer artifact. Two facts
-temper the table: train AUROC saturates at 1.000 at four depths, because the
-distance-based training labels are trivially separable, and `val` is both the noisiest
-split and the selection split.
+Three of five predeclared depths clear 0.89 OOD, so the effect is not confined to a single
+selected layer. Two facts temper the table: train AUROC saturates at 1.000 at four depths,
+because the distance-based training labels are trivially separable, and `val` is also the
+selection split and has substantially lower measured AUROC.
 
 ---
 
@@ -156,11 +157,13 @@ The paired question-clustered advantage of the probe over `think_logprob` is **+
 
 Two structural facts matter more than the table. The argmax next token is **never**
 `</think>` in any of the 4,216 rows and mean p(`</think>`) is ~2e-12, so this feature is the
-ordering of a far distributional tail, not the model being about to stop. And every output
-feature is at chance on the *training* distribution (AUROC 0.495–0.508) while reaching
-0.77–0.81 on evaluation splits. The training labels provide essentially no marginal signal
-about current `</think>` propensity, making a simple account in which the probe merely
-learns that quantity unlikely.
+ordering of a far distributional tail, not the model being about to stop. And all cached
+output features have approximately chance discriminative performance on the *training*
+distribution (AUROC 0.495–0.508). Some — most notably `think_logprob` and `think_margin` —
+become substantially predictive on the behavioural evaluation splits despite that lack of
+training signal. The training labels therefore provide essentially no marginal signal about
+current `</think>` propensity, making a simple account in which the probe merely learns that
+quantity unlikely.
 
 ---
 
@@ -226,16 +229,8 @@ The obvious next inference — "the probe is reading length" — is the one I te
 - On near-matched pairs (thresholds |Δlen| ≤ 100 and ≤ 250, frozen before the run) the probe
   scores **0.983** and **0.986**.
 
-So the OOD tie with length does not generalise, and the naive "probe = length" story is
-falsified where the comparison has power.
-
-As a secondary robustness check, I fit on validation a linear nuisance model predicting the
-frozen probe score from prefix length and current `</think>` log-probability (R² = 0.334).
-Applying that frozen correction to `test` reduces AUROC from 0.909 to **0.831 [0.716,
-0.928]**. Length alone accounts for little of the drop (residual 0.882); most is associated
-with `think_logprob` (0.841). Because this operates only on the scalar probe score and only
-linearly, I treat it as evidence that these nuisances matter, not as removal of nuisance
-information from the representation. (Full table in the appendix.)
+So the OOD tie with length does not generalise, and the naive raw-length explanation is
+inconsistent with the better-powered held-out comparison.
 
 ---
 
@@ -266,8 +261,8 @@ coherent.
 - Matched orthogonal contrast = **+0.0174 [+0.0000, +0.0404]**
 - On benchmark-negative prefixes, +2β caused termination in **0 of 172** generations
 
-**The small β-direction effect is not specific: an equal-norm orthogonal direction produces
-at least as large a change.** There is no monotonic dose response, and 85–88% of steered
+**The small β-direction effect is not specific: the tested equal-norm orthogonal direction
+produces at least as large a change.** There is no monotonic dose response, and 85–88% of steered
 continuations are token-identical to baseline. *(Figure 3: `r007_steering_dose.png`)*
 
 Stated precisely: *despite strong linear decodability, sustained steering along the frozen
@@ -287,7 +282,7 @@ termination is high-dimensional.
 | Explained by immediate `</think>` propensity alone | **Not supported** — at chance on the training distribution; probe leads by +0.214 on test |
 | More than between-question topic structure | **Yes** — 15/16 within-question on OOD, p = 0.0005 |
 | More than raw prefix length, in-domain | **Yes** — 0.874 vs 0.494; 0.914 where length is discordant |
-| Survives a linear nuisance control | **Yes, at a cost** — 0.909 → 0.831, interval includes zero |
+| Survives a linear nuisance control | **Yes, at a cost** — 0.909 → 0.831; the paired-drop CI includes zero |
 | Transfer independent of reasoning progress, cross-domain | **Not identifiable on the released OOD split** |
 | The decoded direction causally controls stopping | **No evidence** — and this null is itself weak |
 
@@ -324,7 +319,13 @@ frozen 4,216-row sample is deterministic from seed 42.
 clusters; single-label replicates are discarded rather than coerced. Condition and method
 comparisons resample identical clusters for both scores.
 
-**Nuisance control, full table (test).**
+**Nuisance control (secondary robustness check).** I fit on validation a linear nuisance
+model predicting the frozen probe score from prefix length and current `</think>`
+log-probability (R² = 0.334). Applying that frozen correction to `test` reduces AUROC from
+0.909 to 0.831 [0.716, 0.928]. Length alone accounts for little of the drop (residual
+0.882); most is associated with `think_logprob` (0.841). Because this operates only on the
+scalar probe score and only linearly, I treat it as evidence that these nuisances matter,
+not as removal of nuisance information from the representation.
 
 | score | pooled AUROC [95% CI] | within-question |
 |---|---|---|
@@ -362,13 +363,13 @@ cluster setup, consistent with the application's time-counting rules.
 
 **References.**
 
-[1] A. Ivanova, N. Tyagi, J. Engels, N. Nanda. *Test your best methods on our hard CoT
+[1] D. Ivanova, R. Tyagi, J. Engels, N. Nanda. *Test your best methods on our hard CoT
 interp tasks.* LessWrong / Alignment Forum, 2026.
 `lesswrong.com/posts/tDJWZLQNN7poqCwKa/test-your-fancy-methods-on-our-hard-cot-interp-tasks`
 — defines the partial-transcript / resampling termination task and the released splits used
 here.
 
-[2] S. Dutta. *The Termination Circuit (how reasoning models stop thinking).* LessWrong,
+[2] C. Dutta. *The Termination Circuit (how reasoning models stop thinking).* LessWrong,
 2026. `lesswrong.com/posts/ajhzc6ktEKyFeJFBS/the-termination-circuit-how-reasoning-models-stop-thinking`
 — late-MLP verification gate, reported on Qwen3-1.7B; motivation for the puzzle here, not an
 established claim about Qwen3-32B.
