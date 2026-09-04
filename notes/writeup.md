@@ -126,7 +126,9 @@ plus all evaluation splits):
 | 56 | 0.896 | 0.965 | 0.964 [0.899, 1.000] |
 | 64 | 0.844 | 0.907 | 0.892 [0.806, 0.961] |
 
-*(Figure 1: `reproduction_layer_auroc.png`)*
+*Figure 1 (`report_fig1.png`): termination-probe AUROC at the five predeclared depths.
+Depth 40 is validation-selected; depth 56 is the descriptive maximum over those depths. The
+train line shows the saturation caveat discussed below.*
 
 **The primary result is depth 40 — the depth validation selects — at OOD 0.904.** Depth 56
 reaches 0.964, but that is the maximum over the five predeclared depths, identified by
@@ -199,7 +201,9 @@ balance.** A toy construction shows that this pooled-versus-conditional discrepa
 arise even when pooled length appears balanced; it is intuition, not evidence that this
 mechanism caused the observed OOD skew.
 
-*(Figure 2: `r005_length_balance.png`)*
+*Figure 2 (`report_fig2.png`): grey is prefix length pooled across questions (AUROC);
+orange and blue are within-question concordance for length and for the probe. Both metrics
+have 0.5 as chance. The conditional length association appears on OOD and not on test.*
 
 | split | pooled length AUROC | within-question length | probe |
 |---|---|---|---|
@@ -263,7 +267,8 @@ coherent.
 
 **The small β-direction effect is not specific: the tested equal-norm orthogonal direction
 produces at least as large a change.** There is no monotonic dose response, and 85–88% of steered
-continuations are token-identical to baseline. *(Figure 3: `r007_steering_dose.png`)*
+continuations are token-identical to baseline. *Figure 3 (`report_fig3.png`): the orthogonal control is a single fixed matched-norm
+direction. The axis starts at zero because the effects are ~1 point around a ~45% baseline.*
 
 Stated precisely: *despite strong linear decodability, sustained steering along the frozen
 depth-40 probe direction produced no direction-specific control of termination at the tested
@@ -373,5 +378,10 @@ here.
 2026. `lesswrong.com/posts/ajhzc6ktEKyFeJFBS/the-termination-circuit-how-reasoning-models-stop-thinking`
 — late-MLP verification gate, reported on Qwen3-1.7B; motivation for the puzzle here, not an
 established claim about Qwen3-32B.
+
+**Figures.** `artifacts/figures/report_fig{1,2,3}.png`, regenerated from the committed
+tables and metrics by `src/make_report_figures.py`, which refits nothing and overwrites no
+run artifact. The original per-experiment figures, including the within-question dumbbell
+plot from the OOD control, remain alongside them.
 
 **Repository:** `github.com/raphaelmck/nanda-w27-app`
