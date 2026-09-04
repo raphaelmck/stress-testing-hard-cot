@@ -1,151 +1,0 @@
-host=cn-g018.server.mila.quebec job=10621220
-name, memory.total [MiB], memory.free [MiB]
-NVIDIA A100-SXM4-80GB, 81920 MiB, 81152 MiB
-HF_HOME=/network/scratch/m/michnikr/hf_cache
-/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/huggingface_hub/constants.py:299: FutureWarning: The `HF_HUB_ENABLE_HF_TRANSFER` environment variable is deprecated as 'hf_transfer' is not used anymore. Please use `HF_XET_HIGH_PERFORMANCE` instead to enable high performance transfer with Xet. Visit https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfxethighperformance for more details.
-  warnings.warn(
-model=Qwen/Qwen3-32B revision=9216db5781bf21249d130ec9da846c4624c16137
-layers=64 hidden=5120 context_limit=40960
-depths=[8, 24, 40, 56, 64] -> zero-indexed blocks=[7, 23, 39, 55, 63]
-work list: 4216 rows tokenised in 55.1s; max tokens=16652
-frozen sample manifest: sample_manifest.csv  sha256=c261306dde08c8b9
-device=cuda dtype=bfloat16
-  gpu0: NVIDIA A100-SXM4-80GB 85.1 GB
-  free before load: 84.6 GB / 85.1 GB
-Loading weights:   0%|          | 0/707 [00:00<?, ?it/s]Loading weights:   0%|          | 1/707 [00:03<37:13,  3.16s/it]Loading weights:   1%|          | 5/707 [00:03<06:13,  1.88it/s]Loading weights:   1%|          | 6/707 [00:03<05:38,  2.07it/s]Loading weights:   1%|▏         | 10/707 [00:03<02:45,  4.21it/s]Loading weights:   2%|▏         | 14/707 [00:04<02:01,  5.70it/s]Loading weights:   2%|▏         | 16/707 [00:04<01:58,  5.81it/s]Loading weights:   2%|▏         | 17/707 [00:05<02:16,  5.07it/s]Loading weights:   3%|▎         | 21/707 [00:05<01:29,  7.64it/s]Loading weights:   4%|▎         | 25/707 [00:05<01:08,  9.92it/s]Loading weights:   4%|▍         | 27/707 [00:05<01:18,  8.70it/s]Loading weights:   4%|▍         | 29/707 [00:06<01:19,  8.50it/s]Loading weights:   5%|▍         | 32/707 [00:06<01:06, 10.13it/s]Loading weights:   5%|▌         | 37/707 [00:06<00:51, 13.10it/s]Loading weights:   6%|▌         | 39/707 [00:06<01:13,  9.12it/s]Loading weights:   6%|▌         | 43/707 [00:07<00:56, 11.85it/s]Loading weights:   7%|▋         | 47/707 [00:07<00:49, 13.35it/s]Loading weights:   7%|▋         | 49/707 [00:07<00:54, 12.06it/s]Loading weights:   7%|▋         | 51/707 [00:07<01:01, 10.65it/s]Loading weights:   8%|▊         | 56/707 [00:08<00:45, 14.23it/s]Loading weights:   8%|▊         | 58/707 [00:08<00:53, 12.11it/s]Loading weights:   8%|▊         | 60/707 [00:08<00:57, 11.30it/s]Loading weights:   9%|▉         | 62/707 [00:08<01:04,  9.93it/s]Loading weights:   9%|▉         | 65/707 [00:08<00:50, 12.76it/s]Loading weights:   9%|▉         | 67/707 [00:09<00:45, 13.93it/s]Loading weights:  10%|▉         | 70/707 [00:09<01:01, 10.44it/s]Loading weights:  10%|█         | 72/707 [00:10<01:44,  6.10it/s]Loading weights:  11%|█         | 76/707 [00:10<01:13,  8.56it/s]Loading weights:  11%|█▏        | 81/707 [00:10<01:11,  8.79it/s]Loading weights:  12%|█▏        | 83/707 [00:11<01:41,  6.13it/s]Loading weights:  12%|█▏        | 87/707 [00:11<01:12,  8.54it/s]Loading weights:  13%|█▎        | 89/707 [00:11<01:05,  9.46it/s]Loading weights:  13%|█▎        | 92/707 [00:12<01:09,  8.80it/s]Loading weights:  13%|█▎        | 94/707 [00:13<01:58,  5.17it/s]Loading weights:  14%|█▍        | 98/707 [00:13<01:31,  6.66it/s]Loading weights:  15%|█▍        | 103/707 [00:14<01:17,  7.79it/s]Loading weights:  15%|█▍        | 105/707 [00:14<01:53,  5.28it/s]Loading weights:  15%|█▌        | 109/707 [00:15<01:29,  6.68it/s]Loading weights:  16%|█▌        | 114/707 [00:15<01:18,  7.54it/s]Loading weights:  16%|█▋        | 115/707 [00:16<01:38,  6.03it/s]Loading weights:  16%|█▋        | 116/707 [00:16<02:06,  4.68it/s]Loading weights:  17%|█▋        | 120/707 [00:17<01:24,  6.94it/s]Loading weights:  17%|█▋        | 122/707 [00:17<01:16,  7.68it/s]Loading weights:  18%|█▊        | 125/707 [00:17<01:11,  8.17it/s]Loading weights:  18%|█▊        | 127/707 [00:18<02:03,  4.69it/s]Loading weights:  19%|█▊        | 131/707 [00:18<01:23,  6.89it/s]Loading weights:  19%|█▉        | 133/707 [00:18<01:12,  7.93it/s]Loading weights:  19%|█▉        | 135/707 [00:19<01:18,  7.28it/s]Loading weights:  19%|█▉        | 137/707 [00:19<01:30,  6.31it/s]Loading weights:  20%|█▉        | 138/707 [00:19<01:40,  5.68it/s]Loading weights:  20%|██        | 142/707 [00:19<00:59,  9.44it/s]Loading weights:  20%|██        | 144/707 [00:20<00:54, 10.34it/s]Loading weights:  21%|██        | 147/707 [00:21<01:33,  5.99it/s]Loading weights:  21%|██        | 149/707 [00:21<01:40,  5.58it/s]Loading weights:  22%|██▏       | 153/707 [00:21<01:07,  8.26it/s]Loading weights:  22%|██▏       | 155/707 [00:21<01:00,  9.11it/s]Loading weights:  22%|██▏       | 158/707 [00:22<01:24,  6.46it/s]Loading weights:  23%|██▎       | 160/707 [00:22<01:22,  6.59it/s]Loading weights:  23%|██▎       | 164/707 [00:22<00:57,  9.43it/s]Loading weights:  23%|██▎       | 166/707 [00:23<00:53, 10.19it/s]Loading weights:  24%|██▍       | 168/707 [00:23<01:00,  8.86it/s]Loading weights:  24%|██▍       | 170/707 [00:23<01:05,  8.22it/s]Loading weights:  24%|██▍       | 172/707 [00:23<01:08,  7.76it/s]Loading weights:  25%|██▍       | 175/707 [00:24<00:50, 10.58it/s]Loading weights:  25%|██▌       | 178/707 [00:24<00:39, 13.50it/s]Loading weights:  25%|██▌       | 180/707 [00:24<00:47, 11.02it/s]Loading weights:  26%|██▌       | 182/707 [00:25<01:13,  7.19it/s]Loading weights:  26%|██▋       | 186/707 [00:25<00:51, 10.15it/s]Loading weights:  27%|██▋       | 191/707 [00:25<00:40, 12.65it/s]Loading weights:  27%|██▋       | 193/707 [00:26<01:01,  8.35it/s]Loading weights:  28%|██▊       | 197/707 [00:26<00:43, 11.61it/s]Loading weights:  28%|██▊       | 200/707 [00:26<00:36, 13.95it/s]Loading weights:  29%|██▊       | 203/707 [00:26<00:50,  9.91it/s]Loading weights:  29%|██▉       | 205/707 [00:27<00:58,  8.60it/s]Loading weights:  29%|██▉       | 208/707 [00:27<00:45, 11.00it/s]Loading weights:  30%|██▉       | 211/707 [00:27<00:36, 13.64it/s]Loading weights:  30%|███       | 214/707 [00:28<01:06,  7.36it/s]Loading weights:  31%|███       | 216/707 [00:28<01:13,  6.66it/s]Loading weights:  31%|███       | 220/707 [00:28<00:52,  9.22it/s]Loading weights:  32%|███▏      | 224/707 [00:28<00:45, 10.70it/s]Loading weights:  32%|███▏      | 226/707 [00:29<01:05,  7.29it/s]Loading weights:  33%|███▎      | 230/707 [00:29<00:47, 10.02it/s]Loading weights:  33%|███▎      | 235/707 [00:30<00:39, 12.05it/s]Loading weights:  34%|███▎      | 237/707 [00:30<01:02,  7.50it/s]Loading weights:  34%|███▍      | 241/707 [00:31<00:51,  9.10it/s]Loading weights:  35%|███▍      | 246/707 [00:31<00:43, 10.64it/s]Loading weights:  35%|███▌      | 248/707 [00:32<01:07,  6.81it/s]Loading weights:  36%|███▌      | 254/707 [00:32<00:42, 10.61it/s]Loading weights:  36%|███▋      | 257/707 [00:32<00:44, 10.15it/s]Loading weights:  37%|███▋      | 259/707 [00:34<01:53,  3.96it/s]Loading weights:  37%|███▋      | 263/707 [00:34<01:23,  5.34it/s]Loading weights:  38%|███▊      | 268/707 [00:35<01:02,  7.02it/s]Loading weights:  38%|███▊      | 270/707 [00:35<01:17,  5.67it/s]Loading weights:  39%|███▉      | 274/707 [00:35<00:59,  7.27it/s]Loading weights:  39%|███▉      | 279/707 [00:36<00:46,  9.19it/s]Loading weights:  40%|███▉      | 281/707 [00:37<01:10,  6.05it/s]Loading weights:  40%|████      | 285/707 [00:37<00:50,  8.34it/s]Loading weights:  41%|████      | 287/707 [00:37<00:45,  9.28it/s]Loading weights:  41%|████      | 290/707 [00:38<00:59,  6.95it/s]Loading weights:  41%|████▏     | 292/707 [00:38<00:56,  7.31it/s]Loading weights:  42%|████▏     | 296/707 [00:38<00:43,  9.47it/s]Loading weights:  43%|████▎     | 301/707 [00:38<00:33, 12.20it/s]Loading weights:  43%|████▎     | 303/707 [00:39<00:42,  9.53it/s]Loading weights:  43%|████▎     | 307/707 [00:39<00:32, 12.48it/s]Loading weights:  44%|████▍     | 312/707 [00:39<00:25, 15.32it/s]Loading weights:  44%|████▍     | 314/707 [00:39<00:36, 10.91it/s]Loading weights:  45%|████▌     | 320/707 [00:40<00:24, 15.75it/s]Loading weights:  46%|████▌     | 323/707 [00:40<00:26, 14.67it/s]Loading weights:  46%|████▌     | 325/707 [00:40<00:38,  9.99it/s]Loading weights:  47%|████▋     | 331/707 [00:41<00:25, 14.70it/s]Loading weights:  47%|████▋     | 334/707 [00:41<00:26, 13.92it/s]Loading weights:  48%|████▊     | 336/707 [00:41<00:40,  9.17it/s]Loading weights:  48%|████▊     | 342/707 [00:41<00:26, 13.76it/s]Loading weights:  49%|████▉     | 345/707 [00:42<00:29, 12.34it/s]Loading weights:  49%|████▉     | 347/707 [00:42<00:41,  8.61it/s]Loading weights:  50%|████▉     | 351/707 [00:42<00:31, 11.42it/s]Loading weights:  50%|█████     | 355/707 [00:43<00:31, 11.34it/s]Loading weights:  50%|█████     | 357/707 [00:43<00:36,  9.69it/s]Loading weights:  51%|█████     | 359/707 [00:43<00:37,  9.30it/s]Loading weights:  51%|█████     | 362/707 [00:44<00:30, 11.33it/s]Loading weights:  51%|█████▏    | 364/707 [00:44<00:28, 12.19it/s]Loading weights:  52%|█████▏    | 367/707 [00:44<00:32, 10.48it/s]Loading weights:  52%|█████▏    | 369/707 [00:45<00:46,  7.22it/s]Loading weights:  53%|█████▎    | 373/707 [00:45<00:35,  9.47it/s]Loading weights:  53%|█████▎    | 378/707 [00:45<00:30, 10.74it/s]Loading weights:  54%|█████▎    | 380/707 [00:46<00:51,  6.38it/s]Loading weights:  55%|█████▍    | 386/707 [00:46<00:31, 10.31it/s]Loading weights:  55%|█████▌    | 389/707 [00:47<00:33,  9.49it/s]Loading weights:  55%|█████▌    | 391/707 [00:47<00:49,  6.33it/s]Loading weights:  56%|█████▌    | 395/707 [00:47<00:35,  8.71it/s]Loading weights:  56%|█████▌    | 397/707 [00:48<00:32,  9.61it/s]Loading weights:  57%|█████▋    | 400/707 [00:48<00:34,  8.86it/s]Loading weights:  57%|█████▋    | 402/707 [00:49<00:53,  5.72it/s]Loading weights:  57%|█████▋    | 406/707 [00:49<00:35,  8.37it/s]Loading weights:  58%|█████▊    | 408/707 [00:49<00:31,  9.41it/s]Loading weights:  58%|█████▊    | 411/707 [00:49<00:33,  8.92it/s]Loading weights:  58%|█████▊    | 413/707 [00:50<00:50,  5.78it/s]Loading weights:  59%|█████▉    | 417/707 [00:50<00:34,  8.48it/s]Loading weights:  60%|█████▉    | 422/707 [00:51<00:27, 10.51it/s]Loading weights:  60%|█████▉    | 424/707 [00:51<00:42,  6.73it/s]Loading weights:  61%|██████    | 428/707 [00:51<00:30,  9.22it/s]Loading weights:  61%|██████    | 433/707 [00:52<00:31,  8.58it/s]Loading weights:  62%|██████▏   | 435/707 [00:52<00:33,  8.10it/s]Loading weights:  62%|██████▏   | 440/707 [00:53<00:23, 11.23it/s]Loading weights:  63%|██████▎   | 444/707 [00:53<00:23, 11.06it/s]Loading weights:  63%|██████▎   | 446/707 [00:54<00:39,  6.55it/s]Loading weights:  64%|██████▎   | 450/707 [00:54<00:31,  8.12it/s]Loading weights:  64%|██████▍   | 455/707 [00:54<00:24, 10.17it/s]Loading weights:  65%|██████▍   | 457/707 [00:55<00:33,  7.48it/s]Loading weights:  65%|██████▌   | 461/707 [00:55<00:26,  9.45it/s]Loading weights:  66%|██████▌   | 466/707 [00:56<00:22, 10.66it/s]Loading weights:  66%|██████▌   | 468/707 [00:56<00:29,  8.02it/s]Loading weights:  67%|██████▋   | 472/707 [00:56<00:21, 10.77it/s]Loading weights:  67%|██████▋   | 474/707 [00:56<00:19, 11.82it/s]Loading weights:  67%|██████▋   | 477/707 [00:57<00:18, 12.17it/s]Loading weights:  68%|██████▊   | 479/707 [00:57<00:30,  7.38it/s]Loading weights:  69%|██████▊   | 485/707 [00:57<00:18, 12.10it/s]Loading weights:  69%|██████▉   | 488/707 [00:58<00:19, 11.06it/s]Loading weights:  69%|██████▉   | 490/707 [00:58<00:28,  7.74it/s]Loading weights:  70%|██████▉   | 494/707 [00:58<00:20, 10.26it/s]Loading weights:  71%|███████   | 499/707 [00:59<00:16, 12.80it/s]Loading weights:  71%|███████   | 501/707 [00:59<00:22,  9.14it/s]Loading weights:  72%|███████▏  | 506/707 [00:59<00:16, 12.31it/s]Loading weights:  72%|███████▏  | 510/707 [01:00<00:16, 12.10it/s]Loading weights:  72%|███████▏  | 512/707 [01:17<05:25,  1.67s/it]Loading weights:  73%|███████▎  | 516/707 [01:18<03:32,  1.11s/it]Loading weights:  73%|███████▎  | 518/707 [01:18<02:51,  1.10it/s]Loading weights:  74%|███████▎  | 520/707 [01:18<02:22,  1.31it/s]Loading weights:  74%|███████▍  | 522/707 [01:19<01:57,  1.58it/s]Loading weights:  74%|███████▍  | 524/707 [01:20<01:49,  1.67it/s]Loading weights:  75%|███████▍  | 527/707 [01:20<01:13,  2.45it/s]Loading weights:  75%|███████▍  | 529/707 [01:20<00:57,  3.09it/s]Loading weights:  75%|███████▌  | 532/707 [01:20<00:46,  3.78it/s]Loading weights:  76%|███████▌  | 534/707 [01:21<00:54,  3.15it/s]Loading weights:  76%|███████▌  | 538/707 [01:22<00:36,  4.63it/s]Loading weights:  77%|███████▋  | 543/707 [01:22<00:25,  6.47it/s]Loading weights:  77%|███████▋  | 545/707 [01:23<00:31,  5.18it/s]Loading weights:  78%|███████▊  | 549/707 [01:23<00:22,  7.13it/s]Loading weights:  78%|███████▊  | 551/707 [01:23<00:19,  7.90it/s]Loading weights:  78%|███████▊  | 554/707 [01:23<00:18,  8.20it/s]Loading weights:  79%|███████▊  | 556/707 [01:24<00:25,  5.85it/s]Loading weights:  79%|███████▉  | 560/707 [01:24<00:17,  8.47it/s]Loading weights:  79%|███████▉  | 562/707 [01:24<00:15,  9.43it/s]Loading weights:  80%|███████▉  | 565/707 [01:25<00:15,  9.16it/s]Loading weights:  80%|████████  | 567/707 [01:25<00:21,  6.66it/s]Loading weights:  81%|████████  | 571/707 [01:25<00:13,  9.86it/s]Loading weights:  81%|████████▏ | 575/707 [01:26<00:13,  9.69it/s]Loading weights:  82%|████████▏ | 577/707 [01:26<00:15,  8.52it/s]Loading weights:  82%|████████▏ | 579/707 [01:26<00:16,  7.57it/s]Loading weights:  82%|████████▏ | 582/707 [01:27<00:12,  9.84it/s]Loading weights:  83%|████████▎ | 585/707 [01:27<00:09, 12.28it/s]Loading weights:  83%|████████▎ | 587/707 [01:27<00:12,  9.38it/s]Loading weights:  83%|████████▎ | 589/707 [01:33<01:33,  1.27it/s]Loading weights:  84%|████████▍ | 593/707 [01:33<00:55,  2.05it/s]Loading weights:  85%|████████▍ | 598/707 [01:33<00:34,  3.19it/s]Loading weights:  85%|████████▍ | 600/707 [01:34<00:35,  2.98it/s]Loading weights:  85%|████████▌ | 604/707 [01:34<00:23,  4.41it/s]Loading weights:  86%|████████▌ | 606/707 [01:35<00:19,  5.21it/s]Loading weights:  86%|████████▌ | 609/707 [01:35<00:16,  5.81it/s]Loading weights:  86%|████████▋ | 611/707 [01:36<00:21,  4.45it/s]Loading weights:  87%|████████▋ | 615/707 [01:36<00:15,  6.03it/s]Loading weights:  88%|████████▊ | 620/707 [01:36<00:11,  7.57it/s]Loading weights:  88%|████████▊ | 622/707 [01:37<00:15,  5.62it/s]Loading weights:  89%|████████▊ | 626/707 [01:37<00:11,  7.20it/s]Loading weights:  89%|████████▉ | 631/707 [01:39<00:13,  5.74it/s]Loading weights:  90%|████████▉ | 633/707 [01:39<00:13,  5.69it/s]Loading weights:  90%|█████████ | 637/707 [01:39<00:09,  7.59it/s]Loading weights:  90%|█████████ | 639/707 [01:39<00:08,  8.42it/s]Loading weights:  91%|█████████ | 641/707 [01:40<00:09,  7.16it/s]Loading weights:  91%|█████████ | 643/707 [01:40<00:09,  6.84it/s]Loading weights:  91%|█████████ | 644/707 [01:40<00:12,  5.22it/s]Loading weights:  92%|█████████▏| 648/707 [01:41<00:07,  8.27it/s]Loading weights:  92%|█████████▏| 650/707 [01:41<00:05,  9.56it/s]Loading weights:  92%|█████████▏| 652/707 [01:41<00:06,  8.03it/s]Loading weights:  93%|█████████▎| 654/707 [01:42<00:07,  6.71it/s]Loading weights:  93%|█████████▎| 655/707 [01:42<00:09,  5.70it/s]Loading weights:  93%|█████████▎| 659/707 [01:42<00:05,  8.16it/s]Loading weights:  94%|█████████▍| 664/707 [01:43<00:04,  9.48it/s]Loading weights:  94%|█████████▍| 666/707 [01:43<00:07,  5.58it/s]Loading weights:  95%|█████████▍| 669/707 [01:44<00:05,  7.33it/s]Loading weights:  95%|█████████▍| 671/707 [01:44<00:04,  8.16it/s]Loading weights:  95%|█████████▌| 675/707 [01:44<00:04,  6.87it/s]Loading weights:  96%|█████████▌| 677/707 [01:45<00:04,  6.71it/s]Loading weights:  96%|█████████▋| 681/707 [01:45<00:02,  9.86it/s]Loading weights:  97%|█████████▋| 684/707 [01:45<00:01, 12.20it/s]Loading weights:  97%|█████████▋| 687/707 [01:46<00:02,  7.30it/s]Loading weights:  97%|█████████▋| 689/707 [01:46<00:02,  6.85it/s]Loading weights:  98%|█████████▊| 692/707 [01:46<00:01,  8.93it/s]Loading weights:  98%|█████████▊| 694/707 [01:46<00:01, 10.12it/s]Loading weights:  99%|█████████▊| 697/707 [01:47<00:01,  8.62it/s]Loading weights:  99%|█████████▉| 699/707 [01:48<00:01,  5.27it/s]Loading weights:  99%|█████████▉| 703/707 [01:48<00:00,  7.99it/s]Loading weights: 100%|█████████▉| 705/707 [01:48<00:00,  9.10it/s]Loading weights: 100%|██████████| 707/707 [01:48<00:00,  6.52it/s]
-[W901 15:35:04.706953650 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 182452224 bytes (free: 148570112, total: 85093777408).
-[W901 15:36:21.140878343 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 243269632 bytes (free: 5963776, total: 85093777408).
-[W901 15:37:55.470573956 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 289406976 bytes (free: 190513152, total: 85093777408).
-[W901 15:39:17.773528912 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 329252864 bytes (free: 52101120, total: 85093777408).
-[W901 15:40:36.145485329 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 364904448 bytes (free: 148570112, total: 85093777408).
-[W901 15:41:40.142408612 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 396361728 bytes (free: 322633728, total: 85093777408).
-[W901 15:42:29.085784203 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 425721856 bytes (free: 18546688, total: 85093777408).
-[W901 15:43:14.542117664 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 457179136 bytes (free: 391839744, total: 85093777408).
-[W901 15:43:56.374040328 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 486539264 bytes (free: 58392576, total: 85093777408).
-[W901 15:44:31.831893368 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 526385152 bytes (free: 238747648, total: 85093777408).
-[W901 15:45:09.208992265 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 559939584 bytes (free: 410714112, total: 85093777408).
-[W901 15:45:47.619081553 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 606076928 bytes (free: 408616960, total: 85093777408).
-[W901 15:46:23.171639264 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 648019968 bytes (free: 205193216, total: 85093777408).
-[W901 15:46:59.889420913 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 719323136 bytes (free: 473628672, total: 85093777408).
-[W901 15:47:34.781609203 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 796917760 bytes (free: 205193216, total: 85093777408).
-[W901 16:27:05.328879365 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 845152256 bytes (free: 245039104, total: 85093777408).
-  all 32.76B parameters CUDA-resident across ['cuda:0']
-  free after load:  19.1 GB / 85.1 GB
-</think> token id=151668 (single token: True)
-4216 rows remaining in 886 batches
-batch 1/886  elapsed=0.0min  eta=37.6min
-  wrote shard_00000 (200 rows)
-batch 26/886  elapsed=0.3min  eta=8.8min
-  wrote shard_00001 (200 rows)
-batch 51/886  elapsed=0.6min  eta=10.3min
-  wrote shard_00002 (200 rows)
-batch 76/886  elapsed=1.1min  eta=11.5min
-  wrote shard_00003 (200 rows)
-batch 101/886  elapsed=1.6min  eta=12.6min
-  wrote shard_00004 (200 rows)
-batch 126/886  elapsed=2.2min  eta=13.4min
-  wrote shard_00005 (200 rows)
-batch 151/886  elapsed=2.9min  eta=14.1min
-  wrote shard_00006 (200 rows)
-batch 176/886  elapsed=3.6min  eta=14.6min
-  wrote shard_00007 (200 rows)
-batch 201/886  elapsed=4.4min  eta=14.9min
-  wrote shard_00008 (200 rows)
-batch 226/886  elapsed=5.2min  eta=15.2min
-  wrote shard_00009 (200 rows)
-batch 251/886  elapsed=6.1min  eta=15.4min
-  wrote shard_00010 (200 rows)
-batch 276/886  elapsed=7.0min  eta=15.5min
-  wrote shard_00011 (200 rows)
-batch 301/886  elapsed=8.1min  eta=15.7min
-  wrote shard_00012 (200 rows)
-batch 326/886  elapsed=9.2min  eta=15.8min
-  wrote shard_00013 (200 rows)
-batch 351/886  elapsed=10.5min  eta=16.0min
-  wrote shard_00014 (200 rows)
-batch 376/886  elapsed=12.0min  eta=16.3min
-  wrote shard_00015 (200 rows)
-batch 401/886  elapsed=14.0min  eta=17.0min
-batch 426/886  elapsed=16.3min  eta=17.6min
-  wrote shard_00016 (204 rows)
-batch 451/886  elapsed=18.6min  eta=17.9min
-batch 476/886  elapsed=20.9min  eta=18.0min
-  wrote shard_00017 (202 rows)
-batch 501/886  elapsed=23.2min  eta=17.8min
-batch 526/886  elapsed=25.8min  eta=17.7min
-batch 551/886  elapsed=28.0min  eta=17.0min
-  wrote shard_00018 (201 rows)
-batch 576/886  elapsed=30.5min  eta=16.4min
-batch 601/886  elapsed=33.2min  eta=15.7min
-batch 626/886  elapsed=36.2min  eta=15.0min
-batch 651/886  elapsed=38.2min  eta=13.8min
-batch 676/886  elapsed=39.4min  eta=12.2min
-  wrote shard_00019 (200 rows)
-batch 701/886  elapsed=40.7min  eta=10.7min
-batch 726/886  elapsed=42.0min  eta=9.3min
-batch 751/886  elapsed=43.4min  eta=7.8min
-batch 776/886  elapsed=45.0min  eta=6.4min
-batch 801/886  elapsed=46.6min  eta=4.9min
-batch 826/886  elapsed=48.4min  eta=3.5min
-batch 851/886  elapsed=50.4min  eta=2.1min
-batch 876/886  elapsed=52.7min  eta=0.6min
-  wrote shard_00020 (200 rows)
-  wrote shard_00021 (9 rows)
-extraction complete in 53.7 min
-loaded 4216 rows, activations (4216, 5, 5120), depths=[8, 24, 40, 56, 64]
-  train     n= 4000  yes= 2000  questions=779
-  val       n=   72  yes=   36  questions=30
-  test      n=   86  yes=   43  questions=22
-  ood_test  n=   58  yes=   29  questions=32
-depth  8  C=0.01  train=0.993  val=0.625  test=0.706  ood_test=0.699
-depth 24  C=0.01  train=1.000  val=0.725  test=0.795  ood_test=0.832
-depth 40  C=10    train=1.000  val=0.897  test=0.909  ood_test=0.904
-depth 56  C=10    train=1.000  val=0.896  test=0.965  ood_test=0.964
-depth 64  C=10    train=1.000  val=0.844  test=0.907  ood_test=0.892
-wrote /home/mila/m/michnikr/CODE/nanda-w27-app/artifacts/figures/reproduction_layer_auroc.png
-
-wrote /home/mila/m/michnikr/CODE/nanda-w27-app/artifacts/runs/r001_qwen32b/metrics.json, /home/mila/m/michnikr/CODE/nanda-w27-app/artifacts/runs/r001_qwen32b/probe_scores.csv, /home/mila/m/michnikr/CODE/nanda-w27-app/artifacts/tables/reproduction_layer_auroc.csv
-max OOD AUROC = 0.964 at depth 56 [0.899, 1.000]
-Apply the STATE.md decision rule before choosing the next experiment.
-done
-
-======== GPU REPORT ========
-
-==============NVSMI LOG==============
-
-Timestamp                                              : Tue Sep  1 16:29:32 2026
-Driver Version                                         : 580.159.03
-CUDA Version                                           : 13.0
-
-Attached GPUs                                          : 1
-GPU 00000000:C1:00.0
-    Accounting Mode                                    : Enabled
-    Accounting Mode Buffer Size                        : 4000
-    Accounted Processes
-        Process ID                                     : 863463
-            GPU Utilization                            : 96 %
-            Memory Utilization                         : 29 %
-            Max memory usage                           : 81136 MiB
-            Time                                       : 3336502 ms
-            Is Running                                 : 0
-
-Tue Sep  1 16:29:32 2026       
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 580.159.03             Driver Version: 580.159.03     CUDA Version: 13.0     |
-+-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA A100-SXM4-80GB          On  |   00000000:C1:00.0 Off |                    0 |
-| N/A   25C    P0             61W /  500W |       0MiB /  81920MiB |      0%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-
-+-----------------------------------------------------------------------------------------+
-| Processes:                                                                              |
-|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-|        ID   ID                                                               Usage      |
-|=========================================================================================|
-|  No running processes found                                                             |
-+-----------------------------------------------------------------------------------------+

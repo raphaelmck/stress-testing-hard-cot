@@ -1,95 +1,0 @@
-host=cn-g019.server.mila.quebec job=10624652
-name, memory.total [MiB], memory.free [MiB]
-NVIDIA A100-SXM4-80GB, 81920 MiB, 81152 MiB
-===== STAGE 1: val propagation smoke =====
-Loading weights:   0%|          | 0/707 [00:00<?, ?it/s]Loading weights:   0%|          | 1/707 [00:06<1:18:44,  6.69s/it]Loading weights:   1%|          | 5/707 [00:09<19:38,  1.68s/it]  Loading weights:   1%|          | 6/707 [00:10<15:48,  1.35s/it]Loading weights:   1%|▏         | 10/707 [00:10<06:54,  1.68it/s]Loading weights:   2%|▏         | 12/707 [00:10<05:05,  2.27it/s]Loading weights:   2%|▏         | 14/707 [00:10<04:13,  2.73it/s]Loading weights:   2%|▏         | 16/707 [00:11<03:31,  3.26it/s]Loading weights:   3%|▎         | 18/707 [00:11<03:00,  3.82it/s]Loading weights:   3%|▎         | 21/707 [00:11<02:10,  5.26it/s]Loading weights:   4%|▎         | 25/707 [00:12<01:41,  6.74it/s]Loading weights:   4%|▍         | 27/707 [00:20<12:43,  1.12s/it]Loading weights:   4%|▍         | 28/707 [00:20<11:24,  1.01s/it]Loading weights:   5%|▍         | 32/707 [00:21<06:22,  1.76it/s]Loading weights:   5%|▌         | 37/707 [00:21<03:52,  2.88it/s]Loading weights:   6%|▌         | 39/707 [00:22<03:54,  2.85it/s]Loading weights:   6%|▌         | 43/707 [00:22<02:42,  4.08it/s]Loading weights:   7%|▋         | 48/707 [00:22<01:49,  6.00it/s]Loading weights:   7%|▋         | 50/707 [00:23<02:08,  5.11it/s]Loading weights:   8%|▊         | 54/707 [00:23<01:30,  7.19it/s]Loading weights:   8%|▊         | 56/707 [00:23<01:20,  8.12it/s]Loading weights:   8%|▊         | 59/707 [00:23<01:20,  8.06it/s]Loading weights:   9%|▊         | 61/707 [00:24<01:55,  5.59it/s]Loading weights:   9%|▉         | 65/707 [00:24<01:18,  8.19it/s]Loading weights:   9%|▉         | 67/707 [00:24<01:08,  9.32it/s]Loading weights:  10%|▉         | 69/707 [00:25<01:17,  8.19it/s]Loading weights:  10%|█         | 71/707 [00:25<01:15,  8.39it/s]Loading weights:  10%|█         | 73/707 [00:25<01:21,  7.78it/s]Loading weights:  11%|█         | 76/707 [00:25<01:00, 10.42it/s]Loading weights:  11%|█         | 78/707 [00:26<00:53, 11.80it/s]Loading weights:  11%|█▏        | 81/707 [00:26<00:56, 11.02it/s]Loading weights:  12%|█▏        | 83/707 [00:26<01:29,  6.97it/s]Loading weights:  12%|█▏        | 87/707 [00:27<00:58, 10.62it/s]Loading weights:  13%|█▎        | 92/707 [00:27<00:45, 13.63it/s]Loading weights:  13%|█▎        | 95/707 [00:27<01:12,  8.43it/s]Loading weights:  14%|█▍        | 98/707 [00:28<00:59, 10.26it/s]Loading weights:  14%|█▍        | 100/707 [00:28<00:53, 11.30it/s]Loading weights:  15%|█▍        | 103/707 [00:28<00:51, 11.82it/s]Loading weights:  15%|█▍        | 105/707 [00:28<01:13,  8.16it/s]Loading weights:  16%|█▋        | 116/707 [00:29<00:30, 19.60it/s]Loading weights:  18%|█▊        | 127/707 [00:29<00:18, 32.04it/s]Loading weights:  20%|█▉        | 138/707 [00:29<00:12, 44.54it/s]Loading weights:  21%|██        | 149/707 [00:29<00:09, 55.88it/s]Loading weights:  23%|██▎       | 160/707 [00:29<00:08, 64.33it/s]Loading weights:  24%|██▍       | 170/707 [00:29<00:10, 53.04it/s]Loading weights:  25%|██▌       | 177/707 [00:30<00:14, 36.53it/s]Loading weights:  26%|██▌       | 183/707 [00:31<00:30, 17.39it/s]Loading weights:  27%|██▋       | 188/707 [00:31<00:25, 20.03it/s]Loading weights:  27%|██▋       | 193/707 [00:31<00:22, 22.86it/s]Loading weights:  29%|██▉       | 204/707 [00:31<00:15, 33.30it/s]Loading weights:  30%|███       | 215/707 [00:31<00:10, 44.73it/s]Loading weights:  32%|███▏      | 226/707 [00:31<00:08, 53.66it/s]Loading weights:  34%|███▎      | 237/707 [00:31<00:07, 63.14it/s]Loading weights:  35%|███▍      | 246/707 [00:33<00:30, 15.14it/s]Loading weights:  36%|███▋      | 257/707 [00:33<00:21, 20.66it/s]Loading weights:  37%|███▋      | 264/707 [00:33<00:18, 24.60it/s]Loading weights:  38%|███▊      | 271/707 [00:34<00:26, 16.39it/s]Loading weights:  39%|███▉      | 276/707 [00:34<00:25, 17.15it/s]Loading weights:  40%|███▉      | 281/707 [00:35<00:34, 12.27it/s]Loading weights:  41%|████      | 291/707 [00:35<00:22, 18.43it/s]Loading weights:  43%|████▎     | 301/707 [00:35<00:15, 25.93it/s]Loading weights:  44%|████▎     | 309/707 [00:36<00:12, 32.03it/s]Loading weights:  45%|████▍     | 318/707 [00:36<00:09, 40.21it/s]Loading weights:  46%|████▋     | 328/707 [00:36<00:07, 49.50it/s]Loading weights:  48%|████▊     | 340/707 [00:36<00:05, 62.08it/s]Loading weights:  50%|████▉     | 351/707 [00:36<00:05, 70.77it/s]Loading weights:  51%|█████     | 361/707 [00:36<00:05, 67.06it/s]Loading weights:  52%|█████▏    | 370/707 [00:36<00:04, 69.63it/s]Loading weights:  54%|█████▎    | 379/707 [00:37<00:06, 47.99it/s]Loading weights:  55%|█████▍    | 386/707 [00:37<00:09, 34.89it/s]Loading weights:  55%|█████▌    | 392/707 [00:38<00:14, 21.07it/s]Loading weights:  56%|█████▌    | 396/707 [00:38<00:13, 22.63it/s]Loading weights:  57%|█████▋    | 400/707 [00:38<00:16, 18.60it/s]Loading weights:  57%|█████▋    | 403/707 [00:39<00:20, 14.99it/s]Loading weights:  58%|█████▊    | 413/707 [00:39<00:12, 23.80it/s]Loading weights:  60%|█████▉    | 424/707 [00:39<00:08, 35.11it/s]Loading weights:  62%|██████▏   | 435/707 [00:39<00:05, 46.79it/s]Loading weights:  63%|██████▎   | 445/707 [00:41<00:24, 10.55it/s]Loading weights:  64%|██████▍   | 455/707 [00:41<00:17, 14.46it/s]Loading weights:  65%|██████▌   | 461/707 [00:42<00:14, 16.85it/s]Loading weights:  66%|██████▌   | 467/707 [00:42<00:15, 15.77it/s]Loading weights:  67%|██████▋   | 472/707 [00:43<00:18, 12.80it/s]Loading weights:  67%|██████▋   | 477/707 [00:44<00:23,  9.59it/s]Loading weights:  68%|██████▊   | 480/707 [00:44<00:22, 10.29it/s]Loading weights:  69%|██████▉   | 488/707 [00:44<00:14, 14.88it/s]Loading weights:  69%|██████▉   | 491/707 [00:44<00:15, 14.00it/s]Loading weights:  70%|███████   | 496/707 [00:44<00:12, 17.28it/s]Loading weights:  71%|███████   | 499/707 [00:45<00:11, 18.31it/s]Loading weights:  72%|███████▏  | 506/707 [00:45<00:07, 25.75it/s]Loading weights:  72%|███████▏  | 512/707 [00:45<00:06, 30.80it/s]Loading weights:  74%|███████▍  | 522/707 [00:45<00:04, 44.05it/s]Loading weights:  75%|███████▌  | 532/707 [00:45<00:03, 55.68it/s]Loading weights:  76%|███████▋  | 540/707 [00:45<00:02, 60.46it/s]Loading weights:  78%|███████▊  | 548/707 [00:45<00:02, 60.74it/s]Loading weights:  79%|███████▊  | 555/707 [00:45<00:02, 62.13it/s]Loading weights:  80%|███████▉  | 565/707 [00:45<00:02, 70.76it/s]Loading weights:  81%|████████  | 573/707 [00:46<00:01, 72.01it/s]Loading weights:  82%|████████▏ | 581/707 [00:46<00:01, 70.45it/s]Loading weights:  83%|████████▎ | 589/707 [00:46<00:01, 64.22it/s]Loading weights:  85%|████████▍ | 599/707 [00:46<00:01, 72.23it/s]Loading weights:  86%|████████▌ | 609/707 [00:46<00:01, 78.31it/s]Loading weights:  87%|████████▋ | 618/707 [00:46<00:01, 78.20it/s]Loading weights:  89%|████████▊ | 627/707 [00:46<00:01, 71.24it/s]Loading weights:  90%|████████▉ | 635/707 [00:46<00:01, 68.09it/s]Loading weights:  91%|█████████ | 643/707 [00:46<00:00, 69.66it/s]Loading weights:  92%|█████████▏| 653/707 [00:47<00:00, 75.29it/s]Loading weights:  93%|█████████▎| 661/707 [00:47<00:00, 75.72it/s]Loading weights:  95%|█████████▍| 669/707 [00:47<00:00, 71.97it/s]Loading weights:  96%|█████████▌| 677/707 [00:47<00:00, 64.47it/s]Loading weights:  97%|█████████▋| 686/707 [00:47<00:00, 68.93it/s]Loading weights:  99%|█████████▊| 697/707 [00:47<00:00, 76.91it/s]Loading weights: 100%|█████████▉| 705/707 [00:47<00:00, 75.06it/s]Loading weights: 100%|██████████| 707/707 [00:47<00:00, 14.78it/s]
-[W901 23:27:38.303580377 CUDACachingAllocator.cpp:508] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 5963776, total: 85093777408).
-[W901 23:27:38.307953994 CUDACachingAllocator.cpp:508] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 5963776, total: 85093777408).
-model on cuda:0; free 17.8 GB / 79.2 GB
-directions ready: ||beta||=7.8492, ||dh|| at 2SD = 4.377, ortho ||dh|| = 4.377
-val: 72 prefixes
-Traceback (most recent call last):
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/src/steer_termination.py", line 329, in <module>
-    raise SystemExit(main())
-                     ^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/src/steer_termination.py", line 219, in main
-    out = model.model(ids.unsqueeze(0).expand(len(conds), -1).contiguous(),
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1068, in wrapper
-    output = func(self, *args, **kwargs)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/transformers/utils/output_capturing.py", line 262, in wrapper
-    outputs = func(self, *args, **kwargs)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 413, in forward
-    hidden_states = decoder_layer(
-                    ^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/transformers/modeling_layers.py", line 114, in __call__
-    return super().__call__(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 320, in forward
-    hidden_states = self.post_attention_layernorm(hidden_states)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/mila/m/michnikr/CODE/nanda-w27-app/.venv/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 62, in forward
-    variance = hidden_states.pow(2).mean(-1, keepdim=True)
-               ^^^^^^^^^^^^^^^^^^^^
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 104.00 MiB. GPU 0 has a total capacity of 79.25 GiB of which 65.69 MiB is free. Including non-PyTorch memory, this process has 79.18 GiB memory in use. Of the allocated memory 78.56 GiB is allocated by PyTorch, and 117.21 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
-
-======== GPU REPORT ========
-
-==============NVSMI LOG==============
-
-Timestamp                                              : Tue Sep  1 23:27:41 2026
-Driver Version                                         : 580.159.03
-CUDA Version                                           : 13.0
-
-Attached GPUs                                          : 1
-GPU 00000000:01:00.0
-    Accounting Mode                                    : Enabled
-    Accounting Mode Buffer Size                        : 4000
-    Accounted Processes
-        Process ID                                     : 2606997
-            GPU Utilization                            : 4 %
-            Memory Utilization                         : 0 %
-            Max memory usage                           : 81136 MiB
-            Time                                       : 66728 ms
-            Is Running                                 : 0
-
-Tue Sep  1 23:27:41 2026       
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 580.159.03             Driver Version: 580.159.03     CUDA Version: 13.0     |
-+-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA A100-SXM4-80GB          On  |   00000000:01:00.0 Off |                    0 |
-| N/A   37C    P0             99W /  500W |       0MiB /  81920MiB |     24%      Default |
-|                                         |                        |             Disabled |
-+-----------------------------------------+------------------------+----------------------+
-
-+-----------------------------------------------------------------------------------------+
-| Processes:                                                                              |
-|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-|        ID   ID                                                               Usage      |
-|=========================================================================================|
-|  No running processes found                                                             |
-+-----------------------------------------------------------------------------------------+

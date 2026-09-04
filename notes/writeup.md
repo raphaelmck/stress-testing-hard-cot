@@ -386,4 +386,4 @@ tables and metrics by `src/make_report_figures.py`, which refits nothing and ove
 run artifact. The original per-experiment figures, including the within-question dumbbell
 plot from the OOD control, remain alongside them.
 
-**Repository:** `github.com/raphaelmck/nanda-w27-app`
+**Repository:** `github.com/raphaelmck/stress-testing-hard-cot`

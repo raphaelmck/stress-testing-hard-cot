@@ -1,6 +1,9 @@
 # Upstream dataset clone — pinned by commit in DECISIONS.md D003, never committed
 cot-proxy-tasks/
 
+# Cluster execution logs -- the scientific record is artifacts/runs/*/stdout.log
+slurm-*.out
+
 # Large run artifacts
 artifacts/cache/
 *.npy
