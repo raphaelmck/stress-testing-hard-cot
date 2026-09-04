@@ -60,6 +60,66 @@ Colab evaluated and rejected; moving to the Mila cluster (D009). Runbook and SLU
 script added. Infrastructure work stops here: further engineering before real data
 has diminishing returns.
 
-## Next
+## 2026-09-01 — R001, the reproduction
 
-R001 has not been run. Nothing in `RESULTS.md` yet.
+Ran on a Mila A100-80GB. Prompt gate re-verified on the cluster, smoke and memory
+stress passed, then 4,216 rows extracted in 53.7 min. Max OOD AUROC 0.964 at depth
+56; the val-selected depth 40 gives 0.904. Reproduction bar cleared, so probe
+optimisation stopped and the D007 embargo lifted by its own terms.
+
+Also corrected a hash recorded here in error: `d9eb713bcd366b6a` was the 10-row
+smoke worklist, not the frozen sample (train-only `9ae14f9e27a5f66d`, full worklist
+`c261306dde08c8b9`). No result depended on it.
+
+## 2026-09-01 — R002, the obvious explanation
+
+`think_logprob` used directly reaches 0.807 OOD against the probe's 0.904, paired
+delta +0.096. Two facts mattered more than the gap: the argmax next token is never
+`</think>` anywhere in the data, and every output feature is at chance on the
+distance-based training labels. So the probe cannot plausibly have learned current
+stop propensity from what it was trained on.
+
+## 2026-09-01 — R003, the surprise that redirected the project
+
+The preregistered within-question OOD control (D008). The probe separates 15/16
+questions, p = 0.0005 -- and so does raw `token_length`, at exactly the same 0.938,
+positive in 16/16. Recorded D011 promoting length to the primary nuisance variable,
+closing `ood_test`, and redirecting the next experiment away from residualisation.
+
+At this point I believed the result might collapse into a length shortcut.
+
+## 2026-09-01 — R004, which falsified that
+
+The same analysis on `test`, where there is power: length is at chance within
+question (0.494) while the probe is 0.874, and the probe stays at 0.914 on the 52
+pairs where the positive is *shorter*. So R003's tie was a property of ood_test's 16
+mostly-1v1 questions, not a general fact.
+
+## 2026-09-01 — R005, why the two splits differ
+
+Read the three released v8 builders. Global length filter, per-prompt class
+balancing by label quality, then length balancing in global 500-token buckets; no
+within-prompt length matching in the code paths inspected. Recorded D012: the
+identification limit of the OOD split is itself a result, and the project gets one
+more experiment.
+
+## 2026-09-01 — R006, the nuisance control
+
+Score-level, fit on val without labels. Test AUROC 0.909 -> 0.831; almost all of the
+cost is `think_logprob`, not length.
+
+## 2026-09-01/02 — R007, the causal test
+
+A CPU preflight showed a 2-val-SD edit is 2.6% of the residual norm, so D013 was
+written and the intervention run once. Two OOM aborts first, both self-inflicted:
+the full-sequence-logits bug this log records being caught before the R001 run
+recurred in the steering script, and the Stage-1 forward was missing `no_grad`.
+
+The experiment itself: baseline reproduces the released labels (0.895 vs 0.000), the
+edit lands to 0.158% and propagates, and steering changes termination by ~1 point
+while a matched-norm orthogonal direction changes it slightly more. Weak negative,
+as D013 froze in advance.
+
+## Where it ended
+
+Seven runs, written up in `notes/writeup.md`. Experimentation is closed.

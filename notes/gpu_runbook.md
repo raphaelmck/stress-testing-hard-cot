@@ -1,7 +1,10 @@
 # R001 GPU runbook — Qwen3-32B activation extraction on the Mila cluster
 
-Everything that can be done on a laptop is done and committed. This is the exact
-sequence for the GPU stage. Read `STATE.md` and `DECISIONS.md` first; do not deviate
+**Historical/operational.** This is the procedure that was actually used; all runs it
+describes have completed (see `RESULTS.md`). It is kept as the reproduction reference
+for the GPU stage, not as a to-do list.
+
+This is the exact sequence for the GPU stage. Read `STATE.md` and `DECISIONS.md` first; do not deviate
 from the frozen decisions to make something fit.
 
 Compute: **Mila cluster**, H100 (80 GB) or `a100l` (A100 80 GB). Colab was evaluated
